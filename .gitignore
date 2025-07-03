@@ -172,4 +172,5 @@ gradle-app.setting
 .idea
 
 src/main/resources/*.yml
+src/test/resources/*.yml
 docker-compose.yml
