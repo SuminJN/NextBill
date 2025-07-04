@@ -30,7 +30,6 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout").permitAll()
                         .anyRequest().authenticated()
-                        .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
