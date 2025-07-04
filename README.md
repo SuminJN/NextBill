@@ -36,7 +36,8 @@
 
 ## ERD (Entity Relationship Diagram)
 
-![NextBill (3).png](../../../Downloads/NextBill%20%283%29.png)
+![NextBill (3)](https://github.com/user-attachments/assets/6577b985-095b-4edd-8e58-01309f7b1b7d)
+
 ### 주요 테이블 설명
 
 #### users
