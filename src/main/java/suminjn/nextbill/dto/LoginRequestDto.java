@@ -1,8 +1,12 @@
 package suminjn.nextbill.dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class LoginRequestDto {
     private String userEmail;
     private String userPassword;
