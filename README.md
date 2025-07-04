@@ -28,7 +28,7 @@
 ## 시스템 아키텍처
 
 - **Backend**: Spring Boot
-- **Database**: MySQL (or H2 for local), SQLite3 (기본 ERD 기반)
+- **Database**: MySQL
 - **Cache**: Redis
 - **Message Queue**: Kafka
 - **Authentication**: JWT (Access Token + Refresh Token)
