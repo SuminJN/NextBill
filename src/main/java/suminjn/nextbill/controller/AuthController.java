@@ -1,0 +1,50 @@
+package suminjn.nextbill.controller;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import suminjn.nextbill.dto.LoginRequestDto;
+import suminjn.nextbill.dto.LoginResponseDto;
+import suminjn.nextbill.dto.RefreshTokenRequestDto;
+import suminjn.nextbill.security.JwtProvider;
+import suminjn.nextbill.service.AuthService;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+    private final JwtProvider jwtProvider;
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
+        LoginResponseDto tokens = authService.login(request);
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refresh(@RequestBody RefreshTokenRequestDto request) {
+        LoginResponseDto newTokens = authService.refreshToken(request);
+        return ResponseEntity.ok(newTokens);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String token = resolveToken(request);
+        if (token != null && jwtProvider.validateToken(token)) {
+            String email = jwtProvider.getEmailFromToken(token);
+            authService.logout(email);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7) : null;
+    }
+}
