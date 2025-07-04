@@ -3,9 +3,11 @@ package suminjn.nextbill.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import suminjn.nextbill.domain.User;
 import suminjn.nextbill.dto.UserRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
+import suminjn.nextbill.exception.DuplicateEmailException;
 import suminjn.nextbill.repository.UserRepository;
 
 import java.util.Optional;
@@ -21,10 +23,16 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public void register(UserRequestDto request) {
+    @Transactional
+    public UserResponseDto register(UserRequestDto request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("이미 존재하는 이메일입니다.");
+        }
+
         User user = request.toEntity();
         user.updatePassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        User saved = userRepository.save(user);
+        return UserResponseDto.from(saved);
     }
 
     public UserResponseDto getUserById(Long userId) {
