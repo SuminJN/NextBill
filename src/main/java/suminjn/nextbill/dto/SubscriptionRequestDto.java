@@ -1,6 +1,9 @@
 package suminjn.nextbill.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import suminjn.nextbill.domain.enums.BillingCycle;
 import suminjn.nextbill.domain.Subscription;
 import suminjn.nextbill.domain.User;
@@ -9,6 +12,9 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SubscriptionRequestDto {
     private Long userId;
     private String name;
