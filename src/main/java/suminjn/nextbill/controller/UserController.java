@@ -1,6 +1,7 @@
 package suminjn.nextbill.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import suminjn.nextbill.dto.UserRequestDto;
@@ -15,9 +16,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Void> registerUser(@RequestBody UserRequestDto request) {
-        userService.register(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto request) {
+        UserResponseDto response = userService.register(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response); // 201 Created
     }
 
     @GetMapping("/exists")
