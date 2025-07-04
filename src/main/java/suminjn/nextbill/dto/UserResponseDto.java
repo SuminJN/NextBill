@@ -8,13 +8,13 @@ import suminjn.nextbill.domain.User;
 @Builder
 public class UserResponseDto {
     private Long userId;
-    private String userEmail;
+    private String email;
     private Boolean isEmailAlertEnabled;
 
     public static UserResponseDto from(User user) {
         return UserResponseDto.builder()
                 .userId(user.getUserId())
-                .userEmail(user.getEmail())
+                .email(user.getEmail())
                 .isEmailAlertEnabled(user.getIsEmailAlertEnabled())
                 .build();
     }
