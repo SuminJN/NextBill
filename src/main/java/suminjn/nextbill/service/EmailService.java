@@ -75,4 +75,38 @@ public class EmailService {
 
         return content.toString();
     }
+
+    // 테스트용 이메일 발송 메서드
+    public void sendTestEmail(String toEmail, String testMessage) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(toEmail);
+            message.setSubject("NextBill - 이메일 발송 테스트");
+            message.setText(buildTestEmailContent(testMessage));
+            message.setFrom(fromEmail);
+
+            mailSender.send(message);
+            log.info("✅ 테스트 이메일 전송 완료: {}", toEmail);
+        } catch (Exception e) {
+            log.error("❌ 테스트 이메일 전송 실패: {}", toEmail, e);
+            throw new RuntimeException("이메일 발송 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private String buildTestEmailContent(String testMessage) {
+        StringBuilder content = new StringBuilder();
+        content.append("안녕하세요!\n\n");
+        content.append("NextBill 이메일 발송 기능이 정상적으로 작동하고 있습니다.\n\n");
+
+        if (testMessage != null && !testMessage.trim().isEmpty()) {
+            content.append("테스트 메시지: ").append(testMessage).append("\n\n");
+        }
+
+        content.append("현재 시간: ").append(java.time.LocalDateTime.now().toString()).append("\n\n");
+        content.append("NextBill에서 구독을 효율적으로 관리하세요.\n");
+        content.append("감사합니다.\n\n");
+        content.append("NextBill 팀");
+
+        return content.toString();
+    }
 }
