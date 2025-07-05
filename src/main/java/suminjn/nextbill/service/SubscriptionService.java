@@ -1,10 +1,12 @@
 package suminjn.nextbill.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import suminjn.nextbill.domain.Subscription;
 import suminjn.nextbill.dto.SubscriptionRequestDto;
 import suminjn.nextbill.dto.SubscriptionResponseDto;
+import suminjn.nextbill.exception.EntityNotFoundException;
 import suminjn.nextbill.repository.SubscriptionRepository;
 import suminjn.nextbill.repository.UserRepository;
 
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
@@ -28,32 +31,51 @@ public class SubscriptionService {
     public SubscriptionResponseDto createSubscription(SubscriptionRequestDto request) {
         Subscription sub = request.toEntity();
         sub.setUser(userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")));
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + request.getUserId())));
         return SubscriptionResponseDto.from(subscriptionRepository.save(sub));
     }
 
     public SubscriptionResponseDto updateSubscription(Long id, SubscriptionRequestDto request) {
-        Subscription sub = request.toEntity();
-        sub.setSubscriptionId(id);
-        sub.setUser(userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")));
-        return SubscriptionResponseDto.from(subscriptionRepository.save(sub));
+        Subscription existingSub = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("구독을 찾을 수 없습니다. ID: " + id));
+        
+        existingSub.updateDetails(
+                request.getName(),
+                request.getCost(),
+                request.getBillingCycle(),
+                request.getNextPaymentDate()
+        );
+        
+        log.info("구독 정보 수정 완료. ID: {}", id);
+        return SubscriptionResponseDto.from(subscriptionRepository.save(existingSub));
     }
 
     public void delete(Long id) {
+        if (!subscriptionRepository.existsById(id)) {
+            throw new EntityNotFoundException("구독을 찾을 수 없습니다. ID: " + id);
+        }
         subscriptionRepository.deleteById(id);
+        log.info("구독 삭제 완료. ID: {}", id);
     }
 
     public SubscriptionResponseDto togglePause(Long id) {
         Subscription sub = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("구독을 찾을 수 없습니다."));
-        sub.setIsPaused(!sub.getIsPaused());
+                .orElseThrow(() -> new EntityNotFoundException("구독을 찾을 수 없습니다. ID: " + id));
+        
+        if (sub.getIsPaused()) {
+            sub.resume();
+            log.info("구독 재활성화. ID: {}", id);
+        } else {
+            sub.pause();
+            log.info("구독 일시정지. ID: {}", id);
+        }
+        
         return SubscriptionResponseDto.from(subscriptionRepository.save(sub));
     }
 
     public Subscription findById(Long id) {
         return subscriptionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("구독을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("구독을 찾을 수 없습니다. ID: " + id));
     }
 
     public List<Subscription> findDueToday(LocalDate date) {

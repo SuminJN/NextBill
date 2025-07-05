@@ -8,6 +8,7 @@ import suminjn.nextbill.domain.User;
 import suminjn.nextbill.dto.UserRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
 import suminjn.nextbill.exception.DuplicateEmailException;
+import suminjn.nextbill.exception.EntityNotFoundException;
 import suminjn.nextbill.repository.UserRepository;
 
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class UserService {
     public UserResponseDto getUserById(Long userId) {
         return userRepository.findById(userId)
                 .map(UserResponseDto::from)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
     }
 
     public Optional<User> findById(Long userId) {
