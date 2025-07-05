@@ -33,4 +33,12 @@ public class User extends BaseTimeEntity {
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
+
+    public void updateEmail(String newEmail) {
+        this.email = newEmail;
+    }
+
+    public void updateEmailAlertEnabled(Boolean isEmailAlertEnabled) {
+        this.isEmailAlertEnabled = isEmailAlertEnabled;
+    }
 }
