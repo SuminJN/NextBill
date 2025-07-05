@@ -16,12 +16,10 @@ import java.util.List;
 @Builder
 public class Subscription extends BaseTimeEntity {
 
-    @Setter // 수정 예정
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subscriptionId;
 
-    @Setter // 수정 예정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -42,7 +40,6 @@ public class Subscription extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate nextPaymentDate;
 
-    @Setter
     @Column(nullable = false)
     private Boolean isPaused;
 
@@ -50,4 +47,28 @@ public class Subscription extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AlertStatus> alertStatuses;
+
+    // 비즈니스 메서드
+    public void pause() {
+        this.isPaused = true;
+    }
+
+    public void resume() {
+        this.isPaused = false;
+    }
+
+    public void updateDetails(String name, Integer cost, BillingCycle billingCycle, LocalDate nextPaymentDate) {
+        this.name = name;
+        this.cost = cost;
+        this.billingCycle = billingCycle;
+        this.nextPaymentDate = nextPaymentDate;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setSubscriptionId(Long subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
 }
