@@ -658,81 +658,279 @@ const SubscriptionsPage = () => {
       )}
 
       {/* 구독 추가/수정 Dialog */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingSubscription ? '구독 수정' : '구독 추가'}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="name"
-            label="서비스명"
-            fullWidth
-            variant="outlined"
-            value={formData.name}
-            onChange={handleFormChange}
-            error={!!formErrors.name}
-            helperText={formErrors.name}
-            sx={{ mb: 2 }}
+      <Dialog 
+        open={dialogOpen} 
+        onClose={handleCloseDialog} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }}
+      >
+        {/* 헤더 섹션 */}
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+          color: 'white',
+          p: 3,
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* 배경 장식 */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -20,
+              right: -20,
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }}
           />
-          <TextField
-            margin="dense"
-            name="cost"
-            label="금액"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={formData.cost}
-            onChange={handleFormChange}
-            error={!!formErrors.cost}
-            helperText={formErrors.cost}
-            sx={{ mb: 2 }}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -30,
+              left: -30,
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            }}
           />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>결제 주기</InputLabel>
-            <Select
-              name="billingCycle"
-              value={formData.billingCycle}
-              onChange={handleFormChange}
-              label="결제 주기"
-            >
-              <MenuItem value="WEEKLY">주간</MenuItem>
-              <MenuItem value="MONTHLY">월간</MenuItem>
-              <MenuItem value="YEARLY">연간</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            margin="dense"
-            name="startDate"
-            label="시작일"
-            type="date"
-            fullWidth
-            variant="outlined"
-            value={formData.startDate}
-            onChange={handleFormChange}
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            name="nextPaymentDate"
-            label="다음 결제일"
-            type="date"
-            fullWidth
-            variant="outlined"
-            value={formData.nextPaymentDate}
-            onChange={handleFormChange}
-            error={!!formErrors.nextPaymentDate}
-            helperText={formErrors.nextPaymentDate}
-            InputLabelProps={{ shrink: true }}
-            required
-          />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+              {editingSubscription ? '구독 수정' : '구독 추가'}
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              {editingSubscription 
+                ? '구독 정보를 수정하세요' 
+                : '새로운 구독 서비스를 추가하세요'
+              }
+            </Typography>
+          </Box>
+        </Box>
+
+        <DialogContent sx={{ p: 4, backgroundColor: 'background.default' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* 서비스명 */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                서비스명 *
+              </Typography>
+              <TextField
+                name="name"
+                placeholder="예: Netflix, Spotify, Adobe Creative Cloud"
+                fullWidth
+                variant="outlined"
+                value={formData.name}
+                onChange={handleFormChange}
+                error={!!formErrors.name}
+                helperText={formErrors.name}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                  },
+                }}
+              />
+            </Box>
+
+            {/* 금액과 결제 주기를 한 줄에 */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                  금액 *
+                </Typography>
+                <TextField
+                  name="cost"
+                  placeholder="0"
+                  type="number"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.cost}
+                  onChange={handleFormChange}
+                  error={!!formErrors.cost}
+                  helperText={formErrors.cost}
+                  InputProps={{
+                    startAdornment: (
+                      <Box sx={{ mr: 1, color: 'text.secondary', fontWeight: 500 }}>
+                        ₩
+                      </Box>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      '&:hover': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+              
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                  결제 주기 *
+                </Typography>
+                <FormControl fullWidth>
+                  <Select
+                    name="billingCycle"
+                    value={formData.billingCycle}
+                    onChange={handleFormChange}
+                    sx={{
+                      borderRadius: 3,
+                      '&:hover': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="WEEKLY">주간</MenuItem>
+                    <MenuItem value="MONTHLY">월간</MenuItem>
+                    <MenuItem value="YEARLY">연간</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            {/* 날짜 입력을 한 줄에 */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                  시작일
+                </Typography>
+                <TextField
+                  name="startDate"
+                  type="date"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.startDate}
+                  onChange={handleFormChange}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      '&:hover': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+              
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                  다음 결제일 *
+                </Typography>
+                <TextField
+                  name="nextPaymentDate"
+                  type="date"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.nextPaymentDate}
+                  onChange={handleFormChange}
+                  error={!!formErrors.nextPaymentDate}
+                  helperText={formErrors.nextPaymentDate}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      '&:hover': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* 안내 메시지 */}
+            <Box sx={{ 
+              p: 2, 
+              borderRadius: 3, 
+              backgroundColor: 'rgba(99, 102, 241, 0.04)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+            }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                💡 <strong>팁:</strong> 정확한 다음 결제일을 입력하면 결제 알림을 받을 수 있어요!
+              </Typography>
+            </Box>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>취소</Button>
-          <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
-            {submitting ? <CircularProgress size={24} /> : (editingSubscription ? '수정' : '추가')}
+
+        <DialogActions sx={{ 
+          p: 3, 
+          backgroundColor: 'background.paper',
+          borderTop: '1px solid',
+          borderTopColor: 'divider',
+          gap: 2,
+        }}>
+          <Button 
+            onClick={handleCloseDialog}
+            variant="outlined"
+            size="large"
+            sx={{
+              px: 3,
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: 600,
+              borderColor: 'rgba(99, 102, 241, 0.3)',
+              color: 'primary.main',
+              '&:hover': {
+                borderColor: 'primary.main',
+                backgroundColor: 'rgba(99, 102, 241, 0.04)',
+              },
+            }}
+          >
+            취소
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            variant="contained" 
+            disabled={submitting}
+            size="large"
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+              minWidth: 120,
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5855eb 0%, #7c3aed 100%)',
+                boxShadow: '0 6px 20px rgba(99, 102, 241, 0.4)',
+                transform: 'translateY(-1px)',
+              },
+              '&:disabled': {
+                background: 'rgba(0, 0, 0, 0.12)',
+                transform: 'none',
+              },
+            }}
+          >
+            {submitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              editingSubscription ? '수정하기' : '추가하기'
+            )}
           </Button>
         </DialogActions>
       </Dialog>
