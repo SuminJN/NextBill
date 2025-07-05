@@ -33,7 +33,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("test1@example.com"));
     }
 
@@ -50,7 +50,7 @@ class UserControllerTest {
             mockMvc.perform(post("/api/users")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(first)))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isCreated());
 
             UserRequestDto second = new UserRequestDto();
             second.setEmail(email);
@@ -76,7 +76,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/users/exists")
                         .param("email", email))
