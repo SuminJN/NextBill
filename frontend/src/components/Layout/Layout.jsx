@@ -19,7 +19,6 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
-  Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,7 +26,6 @@ import {
   Subscriptions as SubscriptionsIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
-  NotificationsNone as NotificationsIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
 } from '@mui/icons-material';
@@ -35,6 +33,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import Footer from '../Footer/Footer';
+import NotificationPanel from '../NotificationPanel/NotificationPanel';
 
 const drawerWidth = 260;
 
@@ -288,16 +287,7 @@ const Layout = () => {
               {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
             
-            <IconButton 
-              sx={{ 
-                color: 'text.secondary',
-                '&:hover': { backgroundColor: 'rgba(99, 102, 241, 0.08)' }
-              }}
-            >
-              <Badge badgeContent={0} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            <NotificationPanel />
             
             <IconButton onClick={handleAvatarClick} sx={{ p: 0, ml: 1 }}>
               <Avatar 
@@ -401,16 +391,7 @@ const Layout = () => {
             {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
           
-          <IconButton 
-            sx={{ 
-              color: 'text.secondary',
-              '&:hover': { backgroundColor: 'rgba(99, 102, 241, 0.08)' }
-            }}
-          >
-            <Badge badgeContent={0} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
+          <NotificationPanel />
           
           <IconButton onClick={handleAvatarClick} sx={{ p: 0, ml: 1 }}>
             <Avatar 

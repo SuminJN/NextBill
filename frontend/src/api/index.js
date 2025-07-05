@@ -100,6 +100,57 @@ export const subscriptionAPI = {
   },
 };
 
+// 알림 관련 API
+export const notificationAPI = {
+  // 사용자별 알림 조회
+  getNotifications: async (userId) => {
+    const response = await api.get(`/api/notifications/user/${userId}`);
+    return response.data;
+  },
+
+  // 읽지 않은 알림 개수 조회
+  getUnreadCount: async (userId) => {
+    const response = await api.get(`/api/notifications/user/${userId}/unread-count`);
+    return response.data.unreadCount;
+  },
+
+  // 알림 읽음 처리
+  markAsRead: async (notificationId, userId) => {
+    const response = await api.put(`/api/notifications/${notificationId}/read/user/${userId}`);
+    return response.data;
+  },
+
+  // 모든 알림 읽음 처리
+  markAllAsRead: async (userId) => {
+    const response = await api.put(`/api/notifications/user/${userId}/mark-all-read`);
+    return response.data;
+  },
+
+  // 알림 삭제
+  deleteNotification: async (notificationId, userId) => {
+    const response = await api.delete(`/api/notifications/${notificationId}/user/${userId}`);
+    return response.data;
+  },
+
+  // 모든 알림 삭제
+  clearAllNotifications: async (userId) => {
+    const response = await api.delete(`/api/notifications/user/${userId}/clear-all`);
+    return response.data;
+  },
+
+  // 알림 생성 (테스트용)
+  createNotification: async (userId, notificationData) => {
+    const response = await api.post(`/api/notifications/user/${userId}`, notificationData);
+    return response.data;
+  },
+
+  // 결제일 기반 알림 생성 (관리자용)
+  generatePaymentNotifications: async () => {
+    const response = await api.post('/api/notifications/generate-payment-notifications');
+    return response.data;
+  },
+};
+
 // 에러 처리 유틸리티
 export const handleApiError = (error) => {
   let errorMessage;

@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Chip,
   ButtonBase,
+  Button,
   useTheme,
 } from '@mui/material';
 import {
@@ -22,6 +23,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { subscriptionAPI, handleApiError } from '../api';
 import WelcomeModal from '../components/WelcomeModal/WelcomeModal';
+import { useNotifications } from '../contexts/NotificationContext';
 
 // 이메일에서 @ 이전 부분만 추출하는 함수
 const getEmailUsername = (email) => {
@@ -33,6 +35,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { generatePaymentNotifications, createTestNotification } = useNotifications();
   const isDarkMode = theme.palette.mode === 'dark';
   const [subscriptions, setSubscriptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -515,6 +518,33 @@ const DashboardPage = () => {
             )}
           </Paper>
         </Grid>
+
+        {/* 알림 테스트 섹션 (개발용) */}
+        {process.env.NODE_ENV === 'development' && (
+          <Grid item xs={12} sx={{ mt: 2 }}>
+            <Paper sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                🧪 알림 테스트 (개발용)
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => createTestNotification('테스트 알림입니다', 'high')}
+                  size="small"
+                >
+                  테스트 알림 생성
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={generatePaymentNotifications}
+                  size="small"
+                >
+                  결제 알림 생성
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+        )}
       </Grid>
 
       {/* Welcome Modal */}

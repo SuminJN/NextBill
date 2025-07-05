@@ -1,10 +1,13 @@
 import AppRoutes from './components/AppRoutes';
 import { ThemeContextProvider } from './contexts/ThemeContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 function App() {
   return (
     <ThemeContextProvider>
-      <AppRoutes />
+      <NotificationProvider>
+        <AppRoutes />
+      </NotificationProvider>
     </ThemeContextProvider>
   );
 }
