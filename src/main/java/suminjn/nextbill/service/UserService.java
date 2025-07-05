@@ -5,6 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import suminjn.nextbill.domain.User;
+import suminjn.nextbill.dto.UpdateEmailSettingsRequestDto;
+import suminjn.nextbill.dto.UserEmailSettingsDto;
 import suminjn.nextbill.dto.UserRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
 import suminjn.nextbill.exception.DuplicateEmailException;
@@ -100,5 +102,53 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
         
         userRepository.delete(user);
+    }
+
+    // 이메일 알림 설정 조회
+    public UserEmailSettingsDto getEmailSettings(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
+        
+        return UserEmailSettingsDto.from(user);
+    }
+
+    // 이메일 알림 설정 업데이트
+    @Transactional
+    public UserEmailSettingsDto updateEmailSettings(Long userId, UpdateEmailSettingsRequestDto request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
+        
+        // 전체 이메일 알림 설정 업데이트
+        if (request.getIsEmailAlertEnabled() != null) {
+            user.updateEmailAlertEnabled(request.getIsEmailAlertEnabled());
+            
+            // 이메일 알림이 활성화되면 모든 세부 알림도 활성화
+            if (request.getIsEmailAlertEnabled()) {
+                user.updateEmailAlert7Days(true);
+                user.updateEmailAlert3Days(true);
+                user.updateEmailAlert1Day(true);
+            }
+        }
+        
+        // 개별 알림 설정 업데이트
+        if (request.getEmailAlert7Days() != null) {
+            user.updateEmailAlert7Days(request.getEmailAlert7Days());
+        }
+        
+        if (request.getEmailAlert3Days() != null) {
+            user.updateEmailAlert3Days(request.getEmailAlert3Days());
+        }
+        
+        if (request.getEmailAlert1Day() != null) {
+            user.updateEmailAlert1Day(request.getEmailAlert1Day());
+        }
+        
+        // 모든 세부 알림이 꺼지면 전체 이메일 알림도 비활성화
+        if (!user.getEmailAlert7Days() && !user.getEmailAlert3Days() && !user.getEmailAlert1Day()) {
+            user.updateEmailAlertEnabled(false);
+        }
+        
+        User saved = userRepository.save(user);
+        return UserEmailSettingsDto.from(saved);
     }
 }

@@ -30,6 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final EmailService emailService;
 
     // 사용자별 알림 조회
     public List<NotificationResponseDto> getNotifications(Long userId) {
@@ -137,10 +138,20 @@ public class NotificationService {
             LocalDate nextPaymentDate = subscription.getNextPaymentDate();
             long daysUntil = ChronoUnit.DAYS.between(today, nextPaymentDate);
 
+            // 7일 전 알림
+            if (daysUntil == 7) {
+                createPaymentNotification(subscription, NotificationType.PAYMENT_DUE, 
+                    NotificationPriority.LOW, (int) daysUntil);
+            }
             // 3일 전 알림
-            if (daysUntil == 3) {
+            else if (daysUntil == 3) {
                 createPaymentNotification(subscription, NotificationType.PAYMENT_DUE, 
                     NotificationPriority.MEDIUM, (int) daysUntil);
+            }
+            // 1일 전 알림
+            else if (daysUntil == 1) {
+                createPaymentNotification(subscription, NotificationType.PAYMENT_DUE, 
+                    NotificationPriority.HIGH, (int) daysUntil);
             }
             // 오늘 결제 알림
             else if (daysUntil == 0) {
@@ -159,10 +170,15 @@ public class NotificationService {
 
     private void createPaymentNotification(Subscription subscription, NotificationType type, 
                                          NotificationPriority priority, int daysUntil) {
+        User user = subscription.getUser();
+        
+        // 사용자의 이메일 설정 확인
+        boolean shouldSendEmail = shouldSendEmailForDaysUntil(user, daysUntil);
+        
         String message = generatePaymentMessage(subscription, type, daysUntil);
 
         Notification notification = Notification.builder()
-                .user(subscription.getUser())
+                .user(user)
                 .subscription(subscription)
                 .message(message)
                 .type(type)
@@ -171,8 +187,26 @@ public class NotificationService {
                 .isRead(false)
                 .build();
 
-        notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
         log.info("알림 생성: {} - {}", subscription.getName(), message);
+        
+        // 이메일 설정에 따라 이메일 발송
+        if (shouldSendEmail && user.getIsEmailAlertEnabled()) {
+            emailService.sendPaymentNotificationEmail(user, notification);
+        }
+    }
+    
+    private boolean shouldSendEmailForDaysUntil(User user, int daysUntil) {
+        switch (daysUntil) {
+            case 7:
+                return user.getEmailAlert7Days();
+            case 3:
+                return user.getEmailAlert3Days();
+            case 1:
+                return user.getEmailAlert1Day();
+            default:
+                return false; // 다른 일수에 대해서는 이메일 발송하지 않음
+        }
     }
 
     private String generatePaymentMessage(Subscription subscription, NotificationType type, int daysUntil) {
