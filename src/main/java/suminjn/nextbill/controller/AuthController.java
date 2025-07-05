@@ -4,15 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import suminjn.nextbill.dto.LoginRequestDto;
 import suminjn.nextbill.dto.LoginResponseDto;
 import suminjn.nextbill.dto.RefreshTokenRequestDto;
+import suminjn.nextbill.dto.UserResponseDto;
 import suminjn.nextbill.security.JwtProvider;
 import suminjn.nextbill.service.AuthService;
+import suminjn.nextbill.service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,6 +20,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtProvider jwtProvider;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
@@ -42,6 +42,18 @@ public class AuthController {
             authService.logout(email);
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser(HttpServletRequest request) {
+        String token = resolveToken(request);
+        if (token == null || !jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        String email = jwtProvider.getEmailFromToken(token);
+        UserResponseDto user = userService.getUserResponseByEmail(email);
+        return ResponseEntity.ok(user);
     }
 
     private String resolveToken(HttpServletRequest request) {
