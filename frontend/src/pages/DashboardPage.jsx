@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { subscriptionAPI, handleApiError } from '../api';
+import WelcomeModal from '../components/WelcomeModal/WelcomeModal';
 
 // 이메일에서 @ 이전 부분만 추출하는 함수
 const getEmailUsername = (email) => {
@@ -32,11 +33,19 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [subscriptions, setSubscriptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   console.log('DashboardPage - Current user:', user);
 
   useEffect(() => {
     console.log('User found, attempting to fetch subscriptions...');
+    
+    // 첫 방문 체크 (하루에 한 번만)
+    const welcomeShown = localStorage.getItem('nextbill_welcome_shown');
+    const today = new Date().toDateString();
+    if (!welcomeShown || welcomeShown !== today) {
+      setShowWelcomeModal(true);
+    }
     
     // 사용자 정보가 불완전한 경우 처리
     if (user?.needsUserInfo) {
@@ -382,7 +391,11 @@ const DashboardPage = () => {
                     곧 결제될 구독
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    앞으로 7일 이내 결제 예정
+                    오늘 {new Date().toLocaleDateString('ko-KR', { 
+                      month: 'long', 
+                      day: 'numeric', 
+                      weekday: 'short' 
+                    })} · 앞으로 7일 이내 결제 예정
                   </Typography>
                 </Box>
               </Box>
@@ -440,10 +453,16 @@ const DashboardPage = () => {
                         transition: 'all 0.3s ease-in-out',
                       }}>
                         <CardContent sx={{ p: 3 }}>
-                          <Typography variant="h6" sx={{ color: 'grey.900', mb: 1, fontWeight: 600 }}>
+                          <Typography variant="h6" sx={{ 
+                            color: 'primary.main', 
+                            fontWeight: 800,
+                            fontSize: '1.2rem',
+                            mb: 2,
+                            letterSpacing: '0.02em',
+                          }}>
                             {subscription.name}
                           </Typography>
-                          <Typography variant="h5" sx={{ color: 'grey.800', mb: 2, fontWeight: 700 }}>
+                          <Typography variant="h5" sx={{ color: 'grey.600', mb: 2, fontWeight: 700 }}>
                             ₩{subscription.cost.toLocaleString()}
                           </Typography>
                           <Chip
@@ -471,6 +490,12 @@ const DashboardPage = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Welcome Modal */}
+      <WelcomeModal 
+        open={showWelcomeModal} 
+        onClose={() => setShowWelcomeModal(false)} 
+      />
     </Container>
   );
 };
