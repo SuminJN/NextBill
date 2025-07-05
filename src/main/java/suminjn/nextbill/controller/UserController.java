@@ -1,5 +1,6 @@
 package suminjn.nextbill.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto request) {
+    public ResponseEntity<UserResponseDto> registerUser(@Valid @RequestBody UserRequestDto request) {
         UserResponseDto response = userService.register(request);
-        return ResponseEntity.status(HttpStatus.OK).body(response); // 201 Created
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/exists")

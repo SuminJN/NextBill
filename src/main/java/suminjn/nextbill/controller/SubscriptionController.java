@@ -1,5 +1,6 @@
 package suminjn.nextbill.controller;
 
+import jakarta.validation.Valid;
 import suminjn.nextbill.dto.SubscriptionRequestDto;
 import suminjn.nextbill.dto.SubscriptionResponseDto;
 import suminjn.nextbill.service.SubscriptionService;
@@ -25,14 +26,14 @@ public class SubscriptionController {
 
     // 구독 등록
     @PostMapping
-    public ResponseEntity<SubscriptionResponseDto> createSubscription(@RequestBody SubscriptionRequestDto request) {
+    public ResponseEntity<SubscriptionResponseDto> createSubscription(@Valid @RequestBody SubscriptionRequestDto request) {
         SubscriptionResponseDto response = subscriptionService.createSubscription(request);
         return ResponseEntity.created(URI.create("/api/subscriptions/" + response.getSubscriptionId())).body(response);
     }
 
     // 구독 수정
     @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionResponseDto> updateSubscription(@PathVariable Long id, @RequestBody SubscriptionRequestDto request) {
+    public ResponseEntity<SubscriptionResponseDto> updateSubscription(@PathVariable Long id, @Valid @RequestBody SubscriptionRequestDto request) {
         SubscriptionResponseDto response = subscriptionService.updateSubscription(id, request);
         return ResponseEntity.ok(response);
     }
