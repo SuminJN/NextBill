@@ -60,6 +60,18 @@ export const userAPI = {
     return response.data;
   },
 
+  // 이메일 알림 설정 조회
+  getEmailSettings: async (userId) => {
+    const response = await api.get(`/api/users/${userId}/email-settings`);
+    return response.data;
+  },
+
+  // 이메일 알림 설정 업데이트
+  updateEmailSettings: async (userId, settings) => {
+    const response = await api.put(`/api/users/${userId}/email-settings`, settings);
+    return response.data;
+  },
+
   // 계정 삭제
   deleteUser: async (userId) => {
     const response = await api.delete(`/api/users/${userId}`);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -57,7 +58,9 @@ const calculateDaysSinceJoined = (createdAt) => {
 
 const ProfilePage = () => {
   const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
+  const [emailSettings, setEmailSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -65,6 +68,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user?.userId) {
       fetchUserInfo();
+      fetchEmailSettings();
     }
   }, [user]);
 
@@ -80,27 +84,59 @@ const ProfilePage = () => {
     }
   };
 
+  const fetchEmailSettings = async () => {
+    try {
+      const data = await userAPI.getEmailSettings(user.userId);
+      setEmailSettings(data);
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
   const handleAlertToggle = async (event) => {
     const newValue = event.target.checked;
-    const previousValue = userInfo?.isEmailAlertEnabled;
+    const previousValue = emailSettings?.isEmailAlertEnabled;
+    const previousDetailSettings = {
+      emailAlert7Days: emailSettings?.emailAlert7Days,
+      emailAlert3Days: emailSettings?.emailAlert3Days,
+      emailAlert1Day: emailSettings?.emailAlert1Day
+    };
+    
+    // 이메일 알림을 켜면 모든 세부 알림도 켜기
+    const newDetailSettings = newValue ? {
+      emailAlert7Days: true,
+      emailAlert3Days: true,
+      emailAlert1Day: true
+    } : previousDetailSettings;
     
     // 즉시 UI 업데이트 (Optimistic Update)
     setUserInfo(prev => ({
       ...prev,
       isEmailAlertEnabled: newValue
     }));
+    setEmailSettings(prev => ({
+      ...prev,
+      isEmailAlertEnabled: newValue,
+      ...newDetailSettings
+    }));
 
     try {
-      // API 호출
-      const updatedUser = await userAPI.updateEmailAlertSetting(user.userId, newValue);
+      // API 호출 - 메인 토글이 켜지면 모든 세부 설정도 함께 업데이트
+      const updateData = newValue ? {
+        isEmailAlertEnabled: newValue,
+        ...newDetailSettings
+      } : {
+        isEmailAlertEnabled: newValue
+      };
       
-      // 성공 시 사용자 정보와 컨텍스트 업데이트
-      setUserInfo(updatedUser);
-      updateUser(updatedUser);
+      const updatedSettings = await userAPI.updateEmailSettings(user.userId, updateData);
+      
+      // 성공 시 설정 업데이트
+      setEmailSettings(updatedSettings);
       
       showSuccessMessage(
         newValue 
-          ? '이메일 알림이 활성화되었습니다.' 
+          ? '이메일 알림이 활성화되었습니다. 모든 알림이 켜졌습니다.' 
           : '이메일 알림이 비활성화되었습니다.'
       );
     } catch (error) {
@@ -108,6 +144,86 @@ const ProfilePage = () => {
       setUserInfo(prev => ({
         ...prev,
         isEmailAlertEnabled: previousValue
+      }));
+      setEmailSettings(prev => ({
+        ...prev,
+        isEmailAlertEnabled: previousValue,
+        ...previousDetailSettings
+      }));
+      handleApiError(error);
+    }
+  };
+
+  const handleDetailAlertToggle = async (field, newValue) => {
+    const previousValue = emailSettings?.[field];
+    const previousMainToggle = emailSettings?.isEmailAlertEnabled;
+    
+    // 현재 세부 설정 상태 계산
+    const currentDetailSettings = {
+      emailAlert7Days: emailSettings?.emailAlert7Days || false,
+      emailAlert3Days: emailSettings?.emailAlert3Days || false,
+      emailAlert1Day: emailSettings?.emailAlert1Day || false
+    };
+    
+    // 새로운 세부 설정 상태 계산
+    const newDetailSettings = {
+      ...currentDetailSettings,
+      [field]: newValue
+    };
+    
+    // 모든 세부 알림이 꺼지면 메인 토글도 꺼지도록 계산
+    const shouldDisableMainToggle = !newDetailSettings.emailAlert7Days && 
+                                    !newDetailSettings.emailAlert3Days && 
+                                    !newDetailSettings.emailAlert1Day;
+    
+    const newMainToggleValue = shouldDisableMainToggle ? false : previousMainToggle;
+    
+    // 즉시 UI 업데이트 (Optimistic Update)
+    setEmailSettings(prev => ({
+      ...prev,
+      [field]: newValue,
+      isEmailAlertEnabled: newMainToggleValue
+    }));
+    
+    setUserInfo(prev => ({
+      ...prev,
+      isEmailAlertEnabled: newMainToggleValue
+    }));
+
+    try {
+      // API 호출 - 메인 토글 상태도 함께 업데이트
+      const updateData = {
+        [field]: newValue,
+        ...(shouldDisableMainToggle && { isEmailAlertEnabled: false })
+      };
+      
+      const updatedSettings = await userAPI.updateEmailSettings(user.userId, updateData);
+      
+      // 성공 시 설정 업데이트
+      setEmailSettings(updatedSettings);
+      
+      const messages = {
+        emailAlert7Days: '7일 전 알림',
+        emailAlert3Days: '3일 전 알림',
+        emailAlert1Day: '1일 전 알림'
+      };
+      
+      let successMessage = `${messages[field]}이 ${newValue ? '활성화' : '비활성화'}되었습니다.`;
+      if (shouldDisableMainToggle) {
+        successMessage += ' 모든 알림이 꺼져 이메일 알림이 비활성화되었습니다.';
+      }
+      
+      showSuccessMessage(successMessage);
+    } catch (error) {
+      // 실패 시 이전 값으로 되돌리기
+      setEmailSettings(prev => ({
+        ...prev,
+        [field]: previousValue,
+        isEmailAlertEnabled: previousMainToggle
+      }));
+      setUserInfo(prev => ({
+        ...prev,
+        isEmailAlertEnabled: previousMainToggle
       }));
       handleApiError(error);
     }
@@ -303,7 +419,7 @@ const ProfilePage = () => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={userInfo?.isEmailAlertEnabled || false}
+                      checked={emailSettings?.isEmailAlertEnabled || false}
                       onChange={handleAlertToggle}
                       color="primary"
                     />
@@ -319,6 +435,69 @@ const ProfilePage = () => {
                     </Box>
                   }
                 />
+                
+                {/* 세부 알림 설정 */}
+                {emailSettings?.isEmailAlertEnabled && (
+                  <Box sx={{ mt: 3, ml: 4 }}>
+                    <Divider sx={{ mb: 2 }} />
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      알림 받을 시점을 선택하세요
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={emailSettings?.emailAlert7Days || false}
+                            onChange={(e) => handleDetailAlertToggle('emailAlert7Days', e.target.checked)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            7일 전 알림
+                          </Typography>
+                        }
+                        sx={{ ml: 0 }}
+                      />
+                      
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={emailSettings?.emailAlert3Days || false}
+                            onChange={(e) => handleDetailAlertToggle('emailAlert3Days', e.target.checked)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            3일 전 알림
+                          </Typography>
+                        }
+                        sx={{ ml: 0 }}
+                      />
+                      
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={emailSettings?.emailAlert1Day || false}
+                            onChange={(e) => handleDetailAlertToggle('emailAlert1Day', e.target.checked)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            1일 전 알림
+                          </Typography>
+                        }
+                        sx={{ ml: 0 }}
+                      />
+                    </Box>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>
