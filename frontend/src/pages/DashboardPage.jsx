@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Chip,
   ButtonBase,
+  useTheme,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -31,6 +32,8 @@ const getEmailUsername = (email) => {
 const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [subscriptions, setSubscriptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -166,7 +169,7 @@ const DashboardPage = () => {
               <Typography 
                 variant="body2" 
                 sx={{ 
-                  color: 'grey.600', 
+                  color: 'text.secondary', 
                   fontWeight: 500,
                   fontSize: '0.875rem',
                   mb: 1,
@@ -180,7 +183,7 @@ const DashboardPage = () => {
                 variant="h3" 
                 sx={{ 
                   fontWeight: 700, 
-                  color: 'grey.900',
+                  color: 'text.primary',
                   lineHeight: 1.2,
                   mb: 0.5
                 }}
@@ -305,7 +308,7 @@ const DashboardPage = () => {
         <Typography 
           variant="body1" 
           sx={{ 
-            color: 'grey.600', 
+            color: 'text.secondary', 
             fontSize: '1.125rem',
             fontWeight: 400,
           }}
@@ -442,13 +445,21 @@ const DashboardPage = () => {
                   return (
                     <Grid item xs={12} sm={6} md={4} key={subscription.subscriptionId}>
                       <Card sx={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        backgroundColor: isDarkMode 
+                          ? 'rgba(30, 41, 59, 0.95)' 
+                          : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        border: isDarkMode 
+                          ? '1px solid rgba(51, 65, 85, 0.6)' 
+                          : '1px solid rgba(255, 255, 255, 0.2)',
                         '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 1)',
+                          backgroundColor: isDarkMode 
+                            ? 'rgba(30, 41, 59, 1)' 
+                            : 'rgba(255, 255, 255, 1)',
                           transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+                          boxShadow: isDarkMode 
+                            ? '0 8px 25px rgba(0, 0, 0, 0.4)' 
+                            : '0 8px 25px rgba(0, 0, 0, 0.15)',
                         },
                         transition: 'all 0.3s ease-in-out',
                       }}>
@@ -462,9 +473,24 @@ const DashboardPage = () => {
                           }}>
                             {subscription.name}
                           </Typography>
-                          <Typography variant="h5" sx={{ color: 'grey.600', mb: 2, fontWeight: 700 }}>
+                          
+                          <Typography variant="h5" sx={{ color: 'text.secondary', mb: 2, fontWeight: 700 }}>
                             ₩{subscription.cost.toLocaleString()}
                           </Typography>
+                          
+                          <Typography variant="body2" sx={{ 
+                            color: 'text.secondary', 
+                            mb: 2,
+                            fontSize: '0.875rem'
+                          }}>
+                            다음 결제일: {new Date(subscription.nextPaymentDate).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: 'short', 
+                              day: 'numeric',
+                              weekday: 'short'
+                            })}
+                          </Typography>
+                          
                           <Chip
                             label={
                               daysUntilPayment === 0

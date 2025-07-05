@@ -1,4 +1,4 @@
-import { Box, Typography, Link, IconButton } from '@mui/material';
+import { Box, Typography, Link, IconButton, useTheme } from '@mui/material';
 import {
   Email as EmailIcon,
   GitHub as GitHubIcon,
@@ -6,6 +6,8 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   return (
     <Box
@@ -13,8 +15,12 @@ const Footer = () => {
       sx={{
         mt: 3,
         py: 1,
-        borderTop: '1px solid rgba(0, 0, 0, 0.06)',
-        backgroundColor: 'rgba(248, 250, 252, 0.8)',
+        borderTop: isDarkMode 
+          ? '1px solid rgba(51, 65, 85, 0.6)' 
+          : '1px solid rgba(0, 0, 0, 0.06)',
+        backgroundColor: isDarkMode 
+          ? 'rgba(15, 23, 42, 0.8)' 
+          : 'rgba(248, 250, 252, 0.8)',
       }}
     >
       <Box
@@ -46,8 +52,10 @@ const Footer = () => {
             sx={{
               color: 'text.secondary',
               '&:hover': {
-                color: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
+                color: isDarkMode ? '#818cf8' : '#6366f1',
+                backgroundColor: isDarkMode 
+                  ? 'rgba(129, 140, 248, 0.08)' 
+                  : 'rgba(99, 102, 241, 0.08)',
               },
               transition: 'all 0.2s ease',
             }}
@@ -62,8 +70,10 @@ const Footer = () => {
             sx={{
               color: 'text.secondary',
               '&:hover': {
-                color: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
+                color: isDarkMode ? '#818cf8' : '#6366f1',
+                backgroundColor: isDarkMode 
+                  ? 'rgba(129, 140, 248, 0.08)' 
+                  : 'rgba(99, 102, 241, 0.08)',
               },
               transition: 'all 0.2s ease',
             }}

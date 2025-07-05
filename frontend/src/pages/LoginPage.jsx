@@ -8,6 +8,7 @@ import {
   Typography,
   Box,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { handleApiError, showSuccessMessage } from '../api';
@@ -16,6 +17,8 @@ import Footer from '../components/Footer/Footer';
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [formData, setFormData] = useState({
     userEmail: '',
     userPassword: '',
@@ -147,9 +150,15 @@ const LoginPage = () => {
               padding: { xs: 3, sm: 4 }, 
               width: '100%',
               borderRadius: 3,
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(0, 0, 0, 0.06)',
-              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: isDarkMode 
+                ? '0 20px 40px rgba(0, 0, 0, 0.4)' 
+                : '0 20px 40px rgba(0, 0, 0, 0.1)',
+              border: isDarkMode 
+                ? '1px solid rgba(51, 65, 85, 0.6)' 
+                : '1px solid rgba(0, 0, 0, 0.06)',
+              backgroundColor: isDarkMode 
+                ? theme.palette.background.paper 
+                : '#ffffff',
               backdropFilter: 'blur(10px)',
             }}
           >

@@ -28,15 +28,19 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
   NotificationsNone as NotificationsIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import Footer from '../Footer/Footer';
 
 const drawerWidth = 260;
 
 const Layout = () => {
   const theme = useTheme();
+  const { isDarkMode, toggleDarkMode } = useCustomTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -212,9 +216,15 @@ const Layout = () => {
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          backgroundColor: { xs: 'rgba(255, 255, 255, 0.95)', md: 'transparent' },
+          backgroundColor: { 
+            xs: isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)', 
+            md: 'transparent' 
+          },
           backdropFilter: { xs: 'blur(10px)', md: 'none' },
-          borderBottom: { xs: '1px solid rgba(0, 0, 0, 0.06)', md: 'none' },
+          borderBottom: { 
+            xs: isDarkMode ? '1px solid rgba(51, 65, 85, 0.6)' : '1px solid rgba(0, 0, 0, 0.06)', 
+            md: 'none' 
+          },
           color: 'text.primary',
           boxShadow: 'none',
           display: { md: 'none' }, // 데스크탑에서는 완전히 숨김
@@ -267,6 +277,17 @@ const Layout = () => {
           <Box sx={{ flexGrow: 1 }} />
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton 
+              onClick={toggleDarkMode}
+              sx={{ 
+                color: 'text.secondary',
+                '&:hover': { backgroundColor: 'rgba(99, 102, 241, 0.08)' }
+              }}
+              title={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+            >
+              {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+            
             <IconButton 
               sx={{ 
                 color: 'text.secondary',
@@ -363,8 +384,23 @@ const Layout = () => {
             padding: '8px 12px',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(0, 0, 0, 0.06)',
+            ...(isDarkMode && {
+              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              border: '1px solid rgba(51, 65, 85, 0.6)',
+            }),
           }}
         >
+          <IconButton 
+            onClick={toggleDarkMode}
+            sx={{ 
+              color: 'text.secondary',
+              '&:hover': { backgroundColor: 'rgba(99, 102, 241, 0.08)' }
+            }}
+            title={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          >
+            {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+          
           <IconButton 
             sx={{ 
               color: 'text.secondary',
