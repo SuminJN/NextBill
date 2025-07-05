@@ -8,6 +8,7 @@ import suminjn.nextbill.domain.User;
 import suminjn.nextbill.dto.LoginRequestDto;
 import suminjn.nextbill.dto.LoginResponseDto;
 import suminjn.nextbill.dto.RefreshTokenRequestDto;
+import suminjn.nextbill.dto.UserResponseDto;
 import suminjn.nextbill.repository.UserRepository;
 import suminjn.nextbill.security.JwtProvider;
 
@@ -30,7 +31,17 @@ public class AuthService {
         String refreshToken = jwtProvider.generateRefreshToken(user.getEmail());
         refreshTokenService.save(user.getEmail(), refreshToken);
 
-        return new LoginResponseDto(accessToken, refreshToken);
+        UserResponseDto userResponseDto = UserResponseDto.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .isEmailAlertEnabled(user.getIsEmailAlertEnabled())
+                .build();
+
+        return LoginResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .user(userResponseDto)
+                .build();
     }
 
     public LoginResponseDto refreshToken(RefreshTokenRequestDto request) {
@@ -41,12 +52,23 @@ public class AuthService {
             throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.");
         }
 
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new BadCredentialsException("사용자를 찾을 수 없습니다.");
+        }
+
         String newAccessToken = jwtProvider.generateAccessToken(email);
         String newRefreshToken = jwtProvider.generateRefreshToken(email);
 
         refreshTokenService.save(email, newRefreshToken);
 
-        return new LoginResponseDto(newAccessToken, newRefreshToken);
+        UserResponseDto userResponseDto = UserResponseDto.from(user);
+
+        return LoginResponseDto.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .user(userResponseDto)
+                .build();
     }
 
     public void logout(String email) {
