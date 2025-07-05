@@ -114,6 +114,11 @@ const SubscriptionsPage = () => {
     };
     
     return matchesSearch && matchesTab();
+  }).sort((a, b) => {
+    // 다음 결제일이 가까운 순으로 정렬
+    const dateA = new Date(a.nextPaymentDate);
+    const dateB = new Date(b.nextPaymentDate);
+    return dateA - dateB;
   });
 
   const fetchSubscriptions = async () => {
