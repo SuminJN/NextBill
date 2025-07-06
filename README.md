@@ -162,7 +162,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 | start_date | DATE | 구독 시작일 |
 | next_payment_date | DATE | 다음 결제일 |
 | is_paused | BOOLEAN | 일시정지 여부 |
-| deleted_at | TIMESTAMP | 삭제 시각 (Soft Delete) |
+| deleted_at | DATETIME | 삭제 시각 (Soft Delete) |
 
 #### alert_statuses
 | 필드명 | 타입 | 설명 |
@@ -172,7 +172,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 | alert_type | ENUM | 알림 유형 (D_7, D_3, D_1, D_DAY) |
 | alert_date | DATE | 알림 예정일 |
 | is_sent | BOOLEAN | 전송 성공 여부 |
-| sent_at | TIMESTAMP | 실제 전송 시각 |
+| sent_at | DATETIME | 실제 전송 시각 |
 
 #### notifications
 | 필드명 | 타입 | 설명 |
@@ -184,10 +184,10 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 | type | ENUM | 알림 유형 (NotificationType) |
 | priority | ENUM | 알림 우선순위 (NotificationPriority) |
 | is_read | BOOLEAN | 읽음 여부 |
-| read_at | TIMESTAMP | 읽은 시각 |
+| read_at | DATETIME | 읽은 시각 |
 | days_until | INTEGER | 결제일까지 남은 일수 |
-| created_at | TIMESTAMP | 생성 시각 |
-| updated_at | TIMESTAMP | 수정 시각 |
+| created_at | DATETIME | 생성 시각 |
+| updated_at | DATETIME | 수정 시각 |
 
 ---
 
