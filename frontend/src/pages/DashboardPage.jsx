@@ -520,7 +520,7 @@ const DashboardPage = () => {
         </Grid>
 
         {/* 알림 테스트 섹션 (개발용) */}
-        {process.env.NODE_ENV === 'development' && (
+        {/* {process.env.NODE_ENV === 'development' && (
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -544,7 +544,7 @@ const DashboardPage = () => {
               </Box>
             </Paper>
           </Grid>
-        )}
+        )} */}
       </Grid>
 
       {/* Welcome Modal */}
