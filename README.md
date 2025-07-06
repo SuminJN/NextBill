@@ -139,8 +139,6 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 | user_id | BIGINT | 사용자 고유 ID (PK) |
 | email | VARCHAR(100) | 이메일 주소 (UK) |
 | password | VARCHAR(100) | 암호화된 비밀번호 |
-| name | VARCHAR(50) | 사용자 이름 |
-| phone_number | VARCHAR(20) | 전화번호 |
 | is_email_alert_enabled | BOOLEAN | 전체 이메일 알림 설정 |
 | email_alert_7days | BOOLEAN | 7일 전 알림 설정 |
 | email_alert_3days | BOOLEAN | 3일 전 알림 설정 |
@@ -163,12 +161,27 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 #### alert_statuses
 | 필드명 | 타입 | 설명 |
 |--------|------|------|
-| alert_id | BIGINT | 알림 고유 ID (PK) |
+| alert_status_id | BIGINT | 알림 고유 ID (PK) |
 | subscription_id | BIGINT | 구독 ID (FK) |
 | alert_type | ENUM | 알림 유형 (D_7, D_3, D_1, D_DAY) |
 | alert_date | DATE | 알림 예정일 |
 | is_sent | BOOLEAN | 전송 성공 여부 |
 | sent_at | TIMESTAMP | 실제 전송 시각 |
+
+#### notifications
+| 필드명 | 타입 | 설명 |
+|--------|------|------|
+| notification_id | BIGINT | 알림 고유 ID (PK) |
+| user_id | BIGINT | 사용자 ID (FK) |
+| subscription_id | BIGINT | 구독 ID (FK, 선택적) |
+| message | VARCHAR(500) | 알림 메시지 내용 |
+| type | ENUM | 알림 유형 (NotificationType) |
+| priority | ENUM | 알림 우선순위 (NotificationPriority) |
+| is_read | BOOLEAN | 읽음 여부 |
+| read_at | TIMESTAMP | 읽은 시각 |
+| days_until | INTEGER | 결제일까지 남은 일수 |
+| created_at | TIMESTAMP | 생성 시각 |
+| updated_at | TIMESTAMP | 수정 시각 |
 
 ---
 
