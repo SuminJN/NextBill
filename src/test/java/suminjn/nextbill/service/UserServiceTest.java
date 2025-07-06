@@ -33,6 +33,8 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    // 기존 회원가입 테스트 제거 - Google OAuth2만 사용
+    /*
     @Test
     @DisplayName("회원가입 성공")
     void register_success() {
@@ -80,6 +82,7 @@ class UserServiceTest {
                 .isInstanceOf(DuplicateEmailException.class)
                 .hasMessage("이미 존재하는 이메일입니다.");
     }
+    */
 
     @Test
     @DisplayName("존재하지 않는 사용자 조회 시 예외 발생")

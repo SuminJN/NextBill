@@ -65,7 +65,7 @@ const Footer = () => {
           
           <IconButton
             component={Link}
-            href="mailto:suminjn@example.com"
+            href="mailto:nextbill.kr@gmail.com"
             size="small"
             sx={{
               color: 'text.secondary',

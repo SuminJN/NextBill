@@ -52,6 +52,8 @@ class AuthControllerTest {
     @Autowired
     private JwtProvider jwtProvider;
 
+    // 기존 이메일/비밀번호 로그인 테스트 제거 - Google OAuth2만 사용
+    /*
     @Test
     @DisplayName("로그인 성공 테스트")
     void login() throws Exception {
@@ -73,6 +75,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("access-token"))
                 .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
     }
+    */
 
     @Test
     @DisplayName("토큰 재발급 성공 테스트")

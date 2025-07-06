@@ -5,6 +5,60 @@
 
 ---
 
+## ⚡ 빠른 시작
+
+### 1. 환경변수 설정
+
+`.env.example` 파일을 `.env`로 복사
+```bash
+cp .env.example .env
+```
+
+`.env` 파일에서 실제 값으로 수정
+```bash
+# 이메일 발송 설정
+NEXTBILL_EMAIL_USERNAME=your-email@gmail.com
+NEXTBILL_EMAIL_PASSWORD=your-app-password
+
+# Google OAuth2 설정
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+### 2. Google OAuth2 설정
+
+1. [Google Cloud Console](https://console.cloud.google.com/) 접속
+2. 새 프로젝트 생성 또는 기존 프로젝트 선택
+3. "APIs & Services" > "Credentials" 이동
+4. "Create Credentials" > "OAuth 2.0 Client IDs" 선택
+5. 애플리케이션 유형: "Web application" 선택
+6. 승인된 리디렉션 URI 추가:
+   - `http://localhost:8080/login/oauth2/code/google`
+7. Client ID와 Client Secret을 `.env` 파일에 추가
+
+### 3. 실행 방법
+
+백엔드 실행
+```bash
+./gradlew bootRun
+```
+
+프론트엔드 실행
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 보안 고려사항
+
+- 테스트 API는 개발 환경(local profile)에서만 활성화됩니다
+- 이메일 비밀번호는 환경변수를 통해 관리됩니다
+- 실제 Gmail 앱 비밀번호를 사용해야 합니다
+- Google OAuth2를 통한 안전한 로그인 지원
+
+---
+
 ## 프로젝트 개요
 
 - **타겟 사용자**: 정기적으로 서비스를 구독하는 일반 사용자
