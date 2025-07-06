@@ -16,6 +16,12 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
+![Group 1](https://github.com/user-attachments/assets/4f2e50b2-4f6b-436a-a39e-3559e6d51099)
+
+![Group 2](https://github.com/user-attachments/assets/39c3bd3c-3a70-4f4f-b65f-4d91d788aa88)
+
+---
+
 ## 🚀 프로젝트 개요
 
 ### 문제 정의
