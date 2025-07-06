@@ -171,12 +171,8 @@ gradle-app.setting
 
 .idea
 
-# Sensitive configuration files (로컬 개발용 설정 파일만 제외)
-src/main/resources/application-local.yml
-src/main/resources/application-dev.yml
+src/main/resources/*.yml
 src/test/resources/*.yml
-
-# Development docker-compose (프로덕션용은 포함)
 docker-compose.yml
 
 # Node.js and Frontend
@@ -206,4 +202,4 @@ frontend/.env.production.local
 # 환경변수 파일
 .env
 .env.local
-.env.prod
+.env.production
