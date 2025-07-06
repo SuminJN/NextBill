@@ -14,4 +14,5 @@ public class UpdateEmailSettingsRequestDto {
     private Boolean emailAlert7Days;
     private Boolean emailAlert3Days;
     private Boolean emailAlert1Day;
+    private Boolean emailAlertDDay;
 }

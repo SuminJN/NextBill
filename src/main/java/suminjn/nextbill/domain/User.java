@@ -21,8 +21,14 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String password;
+
+    @Column(length = 50)
+    private String name;
+
+    @Column(length = 20)
+    private String phoneNumber;
 
     @Column(nullable = false)
     @Builder.Default
@@ -41,11 +47,23 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     private Boolean emailAlert1Day = true;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean emailAlertDDay = true;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscription> subscriptions;
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    public void updateName(String newName) {
+        this.name = newName;
+    }
+
+    public void updatePhoneNumber(String newPhoneNumber) {
+        this.phoneNumber = newPhoneNumber;
     }
 
     public void updateEmail(String newEmail) {
@@ -68,9 +86,14 @@ public class User extends BaseTimeEntity {
         this.emailAlert1Day = emailAlert1Day;
     }
 
-    public void updateEmailAlertSettings(Boolean emailAlert7Days, Boolean emailAlert3Days, Boolean emailAlert1Day) {
+    public void updateEmailAlertDDay(Boolean emailAlertDDay) {
+        this.emailAlertDDay = emailAlertDDay;
+    }
+
+    public void updateEmailAlertSettings(Boolean emailAlert7Days, Boolean emailAlert3Days, Boolean emailAlert1Day, Boolean emailAlertDDay) {
         this.emailAlert7Days = emailAlert7Days;
         this.emailAlert3Days = emailAlert3Days;
         this.emailAlert1Day = emailAlert1Day;
+        this.emailAlertDDay = emailAlertDDay;
     }
 }

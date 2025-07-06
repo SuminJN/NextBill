@@ -99,14 +99,16 @@ const ProfilePage = () => {
     const previousDetailSettings = {
       emailAlert7Days: emailSettings?.emailAlert7Days,
       emailAlert3Days: emailSettings?.emailAlert3Days,
-      emailAlert1Day: emailSettings?.emailAlert1Day
+      emailAlert1Day: emailSettings?.emailAlert1Day,
+      emailAlertDDay: emailSettings?.emailAlertDDay
     };
     
     // 이메일 알림을 켜면 모든 세부 알림도 켜기
     const newDetailSettings = newValue ? {
       emailAlert7Days: true,
       emailAlert3Days: true,
-      emailAlert1Day: true
+      emailAlert1Day: true,
+      emailAlertDDay: true
     } : previousDetailSettings;
     
     // 즉시 UI 업데이트 (Optimistic Update)
@@ -162,7 +164,8 @@ const ProfilePage = () => {
     const currentDetailSettings = {
       emailAlert7Days: emailSettings?.emailAlert7Days || false,
       emailAlert3Days: emailSettings?.emailAlert3Days || false,
-      emailAlert1Day: emailSettings?.emailAlert1Day || false
+      emailAlert1Day: emailSettings?.emailAlert1Day || false,
+      emailAlertDDay: emailSettings?.emailAlertDDay || false
     };
     
     // 새로운 세부 설정 상태 계산
@@ -174,7 +177,8 @@ const ProfilePage = () => {
     // 모든 세부 알림이 꺼지면 메인 토글도 꺼지도록 계산
     const shouldDisableMainToggle = !newDetailSettings.emailAlert7Days && 
                                     !newDetailSettings.emailAlert3Days && 
-                                    !newDetailSettings.emailAlert1Day;
+                                    !newDetailSettings.emailAlert1Day &&
+                                    !newDetailSettings.emailAlertDDay;
     
     const newMainToggleValue = shouldDisableMainToggle ? false : previousMainToggle;
     
@@ -205,7 +209,8 @@ const ProfilePage = () => {
       const messages = {
         emailAlert7Days: '7일 전 알림',
         emailAlert3Days: '3일 전 알림',
-        emailAlert1Day: '1일 전 알림'
+        emailAlert1Day: '1일 전 알림',
+        emailAlertDDay: 'D-Day 알림'
       };
       
       let successMessage = `${messages[field]}이 ${newValue ? '활성화' : '비활성화'}되었습니다.`;
@@ -491,6 +496,23 @@ const ProfilePage = () => {
                         label={
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             1일 전 알림
+                          </Typography>
+                        }
+                        sx={{ ml: 0 }}
+                      />
+                      
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={emailSettings?.emailAlertDDay || false}
+                            onChange={(e) => handleDetailAlertToggle('emailAlertDDay', e.target.checked)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            D-Day 알림
                           </Typography>
                         }
                         sx={{ ml: 0 }}
