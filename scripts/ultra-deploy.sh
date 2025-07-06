@@ -62,27 +62,69 @@ sync && echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
 if [ "$MEMORY_MODE" = "ultra" ]; then
     echo "🔥 극한 최적화 모드로 빌드 시작..."
     
-    # 단계별 빌드 (메모리 절약)
-    echo "1️⃣ 인프라 서비스 먼저 시작..."
-    docker-compose -f $COMPOSE_FILE up -d postgres redis zookeeper
+    # 메모리 최적화를 위한 커널 파라미터 조정
+    echo "🔧 커널 파라미터 최적화..."
+    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+    echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -p
     
-    # 잠시 대기
+    # 단계별 빌드 (메모리 절약)
+    echo "1️⃣ PostgreSQL 먼저 시작..."
+    docker-compose -f $COMPOSE_FILE up -d postgres
+    
+    # PostgreSQL 완전히 준비될 때까지 대기
+    echo "⏳ PostgreSQL 초기화 대기 (최대 2분)..."
+    timeout 120 bash -c 'until docker exec nextbill-postgres-ultra pg_isready -U ${DB_USER:-nextbill_user} -d ${DB_NAME:-nextbill} >/dev/null 2>&1; do 
+        echo "PostgreSQL 초기화 중..."
+        sleep 5
+    done'
+    
+    if [ $? -ne 0 ]; then
+        echo "❌ PostgreSQL 시작 실패. 로그 확인:"
+        docker logs nextbill-postgres-ultra
+        echo "💡 해결 방법:"
+        echo "1. 메모리 부족: 더 큰 인스턴스 사용"
+        echo "2. 볼륨 문제: docker volume prune -f 실행"
+        echo "3. 권한 문제: sudo chown -R 999:999 /var/lib/docker/volumes/"
+        exit 1
+    fi
+    
+    echo "✅ PostgreSQL 준비 완료!"
+    
+    echo "2️⃣ Redis 시작..."
+    docker-compose -f $COMPOSE_FILE up -d redis
+    sleep 5
+    
+    echo "3️⃣ Zookeeper 시작..."
+    docker-compose -f $COMPOSE_FILE up -d zookeeper
     sleep 10
     
-    echo "2️⃣ Kafka 시작..."
+    echo "4️⃣ Kafka 시작..."
     docker-compose -f $COMPOSE_FILE up -d kafka
     
-    # 잠시 대기
-    sleep 15
+    # Kafka 준비 대기
+    echo "⏳ Kafka 준비 대기..."
+    sleep 20
     
-    echo "3️⃣ 백엔드 빌드 및 시작..."
+    echo "5️⃣ 백엔드 빌드 및 시작..."
     docker-compose -f $COMPOSE_FILE up -d backend
     
     # 백엔드 준비 대기
     echo "⏳ 백엔드 준비 대기..."
-    timeout 120 bash -c 'until docker exec nextbill-backend-ultra curl -f http://localhost:8080/actuator/health >/dev/null 2>&1; do sleep 5; done'
+    timeout 180 bash -c 'until docker exec nextbill-backend-ultra curl -f http://localhost:8080/actuator/health >/dev/null 2>&1; do 
+        echo "백엔드 시작 중..."
+        sleep 10
+    done'
     
-    echo "4️⃣ 프론트엔드 빌드 및 시작..."
+    if [ $? -ne 0 ]; then
+        echo "❌ 백엔드 시작 실패. 로그 확인:"
+        docker logs nextbill-backend-ultra
+        exit 1
+    fi
+    
+    echo "✅ 백엔드 준비 완료!"
+    
+    echo "6️⃣ 프론트엔드 빌드 및 시작..."
     # 메모리 부족 대비 재시도 로직
     for i in {1..3}; do
         echo "프론트엔드 빌드 시도 $i/3..."
@@ -92,17 +134,23 @@ if [ "$MEMORY_MODE" = "ultra" ]; then
         else
             echo "❌ 프론트엔드 빌드 실패. 메모리 정리 후 재시도..."
             docker system prune -f
-            sync && echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+            sync && echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1
             sleep 10
             if [ $i -eq 3 ]; then
-                echo "💥 프론트엔드 빌드 3회 실패. 더 강력한 인스턴스가 필요합니다."
-                echo "💡 t2.small 이상의 인스턴스를 사용하거나, 로컬에서 빌드 후 배포해보세요."
-                exit 1
+                echo "💥 프론트엔드 빌드 3회 실패."
+                echo "💡 대안 방법:"
+                echo "1. 로컬 빌드: ./scripts/local-build-deploy.sh"
+                echo "2. 개발 서버: docker-compose -f docker-compose.fast.yml up -d"
+                echo "3. 인스턴스 업그레이드: t2.small 이상 권장"
+                
+                # 백엔드만으로도 API 서버는 동작하므로 계속 진행
+                echo "🔄 백엔드만으로 API 서버 운영을 계속합니다..."
+                break
             fi
         fi
     done
     
-    echo "5️⃣ Nginx 프록시 시작..."
+    echo "7️⃣ Nginx 프록시 시작..."
     docker-compose -f $COMPOSE_FILE up -d nginx
     
 else

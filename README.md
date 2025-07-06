@@ -240,3 +240,102 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 - **이메일**: nextbill.kr@gmail.com, wjstnals1211@gmail.com
 - **GitHub**: [NextBill Repository](https://github.com/suminjn/NextBill)
+
+---
+
+## 🚀 배포 가이드
+
+### 💻 로컬 개발 환경
+
+```bash
+# 백엔드 실행
+./gradlew bootRun
+
+# 프론트엔드 실행
+cd frontend
+npm install
+npm run dev
+```
+
+### 🐳 Docker 배포 옵션
+
+#### 1. 표준 배포 (권장)
+메모리 2GB 이상 환경에서 사용:
+```bash
+# 환경 변수 설정
+cp .env.example .env.prod
+# .env.prod 파일 편집 후
+
+# 배포 실행
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### 2. 고속 배포 (빌드 최적화)
+메모리 1~2GB 환경에서 사용:
+```bash
+# 빠른 빌드 옵션으로 배포
+./scripts/fast-deploy.sh
+# 또는
+docker-compose -f docker-compose.fast.yml up -d
+```
+
+#### 3. 극한 최적화 배포 (t2.micro 등)
+메모리 1GB 미만 환경에서 사용:
+```bash
+# 극한 최적화 배포 (스왑 메모리 자동 설정)
+./scripts/ultra-deploy.sh
+```
+
+#### 4. 로컬 빌드 후 배포 (빌드 실패 시)
+서버에서 빌드가 실패할 경우:
+```bash
+# 로컬에서 빌드 후 서버에 배포
+./scripts/local-build-deploy.sh <서버IP> <사용자명>
+```
+
+### 📊 배포 옵션 비교
+
+| 옵션 | 메모리 요구사항 | 빌드 시간 | 안정성 | 사용 사례 |
+|------|----------------|-----------|--------|-----------|
+| 표준 배포 | 2GB+ | 5-10분 | ⭐⭐⭐⭐⭐ | 프로덕션 환경 |
+| 고속 배포 | 1-2GB | 3-7분 | ⭐⭐⭐⭐ | 개발/테스트 환경 |
+| 극한 최적화 | 512MB-1GB | 10-15분 | ⭐⭐⭐ | 저사양 서버 |
+| 로컬 빌드 | 무제한 | 2-5분 | ⭐⭐⭐⭐⭐ | 빌드 실패 시 대안 |
+
+### 🔧 트러블슈팅
+
+#### 메모리 부족으로 빌드 실패 시
+1. **극한 최적화 배포 사용**: `./scripts/ultra-deploy.sh`
+2. **스왑 메모리 추가**: 스크립트가 자동으로 설정
+3. **로컬 빌드 사용**: `./scripts/local-build-deploy.sh`
+4. **인스턴스 업그레이드**: t2.small 이상 권장
+
+#### 빌드 속도가 너무 느릴 때
+1. **빌드 캐시 활용**: Docker layer 캐싱
+2. **의존성 사전 설치**: 멀티스테이지 빌드
+3. **청크 분할 최적화**: Vite 설정 조정
+4. **소스맵 비활성화**: 프로덕션 빌드 최적화
+
+#### 서비스 접속 불가 시
+```bash
+# 서비스 상태 확인
+docker-compose ps
+
+# 로그 확인
+docker-compose logs [서비스명]
+
+# 헬스체크
+curl http://localhost/api/actuator/health
+```
+
+### 📋 배포 체크리스트
+
+- [ ] AWS EC2 인스턴스 생성 및 보안 그룹 설정
+- [ ] Docker 및 Docker Compose 설치
+- [ ] 환경 변수 파일(.env.prod) 설정
+- [ ] Google OAuth2 콜백 URL 등록
+- [ ] 도메인/IP 주소 확인
+- [ ] 방화벽 포트(80, 443) 열기
+- [ ] SSL 인증서 설정 (선택사항)
+
+자세한 배포 가이드는 `deployment/` 폴더의 클라우드별 가이드를 참조하세요.

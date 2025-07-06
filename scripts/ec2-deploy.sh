@@ -70,20 +70,21 @@ if [ "$TOTAL_MEM" -lt 1024 ]; then
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: nextbill-postgres-minimal
+  mysql:
+    image: mysql:8.0
+    container_name: nextbill-mysql-minimal
     environment:
-      - POSTGRES_DB=nextbill
-      - POSTGRES_USER=nextbill_user
-      - POSTGRES_PASSWORD=nextbill_secure_password_2024
+      - MYSQL_ROOT_PASSWORD=nextbill50913nrt0cai0vij0239h
+      - MYSQL_DATABASE=nextbill
+      - MYSQL_USER=nextbill_user
+      - MYSQL_PASSWORD=nextbill50913nrt0cai0vij0239h
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     networks:
       - nextbill-network
-    command: postgres -c shared_buffers=64MB -c effective_cache_size=128MB
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=64M --max-connections=50
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nextbill_user -d nextbill"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "nextbill_user", "-pnextbill50913nrt0cai0vij0239h"]
       interval: 15s
       timeout: 10s
       retries: 3
@@ -102,15 +103,18 @@ services:
     container_name: nextbill-backend-minimal
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nextbill
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/nextbill?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=nextbill_user
-      - SPRING_DATASOURCE_PASSWORD=nextbill_secure_password_2024
+      - SPRING_DATASOURCE_PASSWORD=nextbill50913nrt0cai0vij0239h
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - JWT_SECRET=nextbill_jwt_secret_key_very_long_and_secure_2024_production
+      - JWT_SECRET=nfk19nf01of13ifnszkdnmcozmdkmh024mn12mfsolzx
+      - GOOGLE_CLIENT_ID=913887840289-80j2qte7l14it64q2t30o827dum32ml2.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
       - JAVA_OPTS=-Xmx256m -Xms128m -XX:+UseSerialGC
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
     networks:
       - nextbill-network
@@ -126,7 +130,7 @@ services:
     image: nginx:alpine
     container_name: nextbill-frontend-minimal
     volumes:
-      - ./frontend/src:/usr/share/nginx/html
+      - ./frontend/public:/usr/share/nginx/html
       - ./nginx-simple.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80"
@@ -140,7 +144,7 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  mysql_data:
 EOF
 
     # 간단한 nginx 설정
@@ -176,8 +180,8 @@ EOF
     echo "🚀 최소 구성으로 배포 시작..."
     
     # 단계별 배포
-    echo "1️⃣ PostgreSQL 시작..."
-    docker-compose -f docker-compose.minimal.yml up -d postgres
+    echo "1️⃣ MySQL 시작..."
+    docker-compose -f docker-compose.minimal.yml up -d mysql
     sleep 20
     
     echo "2️⃣ Redis 시작..."

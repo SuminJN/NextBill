@@ -6,9 +6,9 @@ spring:
   # 데이터베이스 설정 (환경 변수 사용)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://nextbill-mysql:3306/nextbill?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: nextbill
-    password: ${MYSQL_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/nextbill?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${SPRING_DATASOURCE_USERNAME:nextbill_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:nextbill_password}
 
   # JPA/Hibernate 설정
   jpa:
@@ -17,6 +17,7 @@ spring:
     show-sql: false     # 프로덕션에서는 SQL 로그 비활성화
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
 
   # Redis 캐시 설정 (Docker 컨테이너명 사용)
