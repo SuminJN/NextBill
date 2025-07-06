@@ -110,8 +110,8 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET=nfk19nf01of13ifnszkdnmcozmdkmh024mn12mfsolzx
-      - GOOGLE_CLIENT_ID=913887840289-80j2qte7l14it64q2t30o827dum32ml2.apps.googleusercontent.com
-      - GOOGLE_CLIENT_SECRET=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
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - JAVA_OPTS=-Xmx256m -Xms128m -XX:+UseSerialGC
     depends_on:
       mysql:
