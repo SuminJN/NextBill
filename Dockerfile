@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot
-FROM openjdk:17-jdk-slim AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 
 WORKDIR /app
 COPY gradlew .
@@ -13,12 +13,15 @@ RUN chmod +x ./gradlew
 RUN ./gradlew bootJar --no-daemon
 
 # Runtime stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd -r nextbill && useradd -r -g nextbill nextbill
+# Install curl for health check
+RUN apk add --no-cache curl
+
+# Create non-root user (Alpine Linux syntax)
+RUN addgroup -g 1001 nextbill && adduser -D -u 1001 -G nextbill nextbill
 
 # Copy jar from builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
