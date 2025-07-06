@@ -9,9 +9,9 @@ COPY package*.json ./
 # Install all dependencies (including devDependencies for build)
 RUN npm ci
 
-# Copy source and build
+# Copy source and build with increased memory limit
 COPY . .
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Production stage with nginx
 FROM nginx:alpine
