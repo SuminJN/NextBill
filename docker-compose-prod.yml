@@ -112,12 +112,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
     container_name: nextbill-frontend-prod
     depends_on:
       - backend
     # 포트 제거 - nginx가 프록시 역할
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
     restart: unless-stopped
     networks:
       - nextbill-network

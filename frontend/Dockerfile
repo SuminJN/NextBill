@@ -12,6 +12,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set environment variable for build
+ENV VITE_API_URL=http://13.124.61.42:8080
+
 # Build application
 RUN npx vite build --mode production
 
