@@ -1,0 +1,123 @@
+spring:
+  # 기본 프로파일 설정 (Docker 프로덕션 환경)
+  profiles:
+    active: docker
+    
+  # 데이터베이스 설정 (환경 변수 사용)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://nextbill-mysql:3306/nextbill?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: nextbill
+    password: ${MYSQL_PASSWORD}
+
+  # JPA/Hibernate 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 프로덕션에서 테이블 자동 생성/수정
+    show-sql: false     # 프로덕션에서는 SQL 로그 비활성화
+    properties:
+      hibernate:
+        format_sql: false
+
+  # Redis 캐시 설정 (Docker 컨테이너명 사용)
+  data:
+    redis:
+      host: nextbill-redis
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
+  # Kafka 메시지 큐 설정 (Docker 환경)
+  kafka:
+    bootstrap-servers: nextbill-kafka:29092  # Docker 내부 포트 사용
+    consumer:
+      group-id: nextbill-alert-consumer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: latest    # 최신 메시지부터 소비
+      enable-auto-commit: true     # 자동 오프셋 커밋
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3                   # 전송 실패 시 재시도 횟수
+      acks: all                    # 모든 복제본에서 확인 후 성공 처리
+
+  # 이메일 발송 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${NEXTBILL_EMAIL_USERNAME}
+    password: ${NEXTBILL_EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # OAuth2 설정
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
+            user-name-attribute: email
+
+# JWT 토큰 설정 (환경 변수 사용)
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration-ms: 3600000     # 1시간 (액세스 토큰)
+  refresh-expiration-ms: 1209600000 # 14일 (리프레시 토큰)
+
+# 서버 설정
+server:
+  port: 8080
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    suminjn.nextbill: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+---
+# 로컬 개발 환경 프로파일
+spring:
+  config:
+    activate:
+      on-profile: local
+      
+  # 로컬 개발용 설정
+  datasource:
+    url: jdbc:mysql://localhost:3306/nextbill_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: nextbill
+    password: 1234
+    
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      
+  kafka:
+    bootstrap-servers: localhost:9092
+    
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# JWT 로컬 개발용 (고정값)
+jwt:
+  secret: local-dev-secret-key-for-development-only-min-256-bits
