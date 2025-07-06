@@ -8,6 +8,8 @@ import RegisterPage from '../pages/RegisterPage';
 import DashboardPage from '../pages/DashboardPage';
 import SubscriptionsPage from '../pages/SubscriptionsPage';
 import ProfilePage from '../pages/ProfilePage';
+import AuthCallbackPage from '../pages/AuthCallbackPage';
+import CompleteRegistrationPage from '../pages/CompleteRegistrationPage';
 import Layout from '../components/Layout/Layout';
 
 // 보호된 라우트 컴포넌트
@@ -62,13 +64,23 @@ const AppRoutes = () => {
           </PublicRoute>
         }
       />
+      {/* 기존 회원가입 페이지 제거 - Google OAuth2로만 가입 */}
       <Route
         path="/register"
+        element={<Navigate to="/login" replace />}
+      />
+      
+      {/* OAuth2 콜백 라우트 */}
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      
+      {/* 신규 사용자 등록 완성 라우트 */}
+      <Route 
+        path="/complete-registration" 
         element={
-          <PublicRoute>
-            <RegisterPage />
-          </PublicRoute>
-        }
+          <ProtectedRoute>
+            <CompleteRegistrationPage />
+          </ProtectedRoute>
+        } 
       />
 
       {/* 보호된 라우트 */}

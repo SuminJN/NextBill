@@ -2,12 +2,10 @@ package suminjn.nextbill.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import suminjn.nextbill.dto.UpdateEmailSettingsRequestDto;
 import suminjn.nextbill.dto.UserEmailSettingsDto;
-import suminjn.nextbill.dto.UserRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
 import suminjn.nextbill.service.UserService;
 
@@ -18,29 +16,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> registerUser(@Valid @RequestBody UserRequestDto request) {
-        UserResponseDto response = userService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping("/exists")
-    public ResponseEntity<Boolean> checkEmailExists(@RequestParam String email) {
-        return ResponseEntity.ok(userService.existsByEmail(email));
-    }
+    // 기존 회원가입 엔드포인트 제거 - Google OAuth2만 사용
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> updateUser(
-            @PathVariable Long userId, 
-            @Valid @RequestBody UserRequestDto request) {
-        UserResponseDto response = userService.updateUser(userId, request);
-        return ResponseEntity.ok(response);
-    }
+    // 사용자 정보 업데이트는 OAuth2 등록 완성으로 대체됨
 
     @PatchMapping("/{userId}/email-alert")
     public ResponseEntity<UserResponseDto> updateEmailAlertSetting(

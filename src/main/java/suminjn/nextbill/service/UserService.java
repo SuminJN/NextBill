@@ -7,9 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import suminjn.nextbill.domain.User;
 import suminjn.nextbill.dto.UpdateEmailSettingsRequestDto;
 import suminjn.nextbill.dto.UserEmailSettingsDto;
-import suminjn.nextbill.dto.UserRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
-import suminjn.nextbill.exception.DuplicateEmailException;
+import suminjn.nextbill.dto.CompleteRegistrationRequestDto;
 import suminjn.nextbill.exception.EntityNotFoundException;
 import suminjn.nextbill.repository.UserRepository;
 
@@ -26,17 +25,7 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    @Transactional
-    public UserResponseDto register(UserRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("이미 존재하는 이메일입니다.");
-        }
-
-        User user = request.toEntity();
-        user.updatePassword(passwordEncoder.encode(user.getPassword()));
-        User saved = userRepository.save(user);
-        return UserResponseDto.from(saved);
-    }
+    // 기존 register 메서드 제거 - Google OAuth2만 사용
 
     public UserResponseDto getUserById(Long userId) {
         return userRepository.findById(userId)
@@ -64,27 +53,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @Transactional
-    public UserResponseDto updateUser(Long userId, UserRequestDto request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
-        
-        // 이메일이 변경되는 경우 중복 체크
-        if (!user.getEmail().equals(request.getEmail()) && 
-            userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("이미 존재하는 이메일입니다.");
-        }
-        
-        user.updateEmail(request.getEmail());
-        user.updateEmailAlertEnabled(request.getIsEmailAlertEnabled());
-        
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.updatePassword(passwordEncoder.encode(request.getPassword()));
-        }
-        
-        User saved = userRepository.save(user);
-        return UserResponseDto.from(saved);
-    }
+    // 기존 updateUser 메서드 제거 - OAuth2 등록 완성으로 대체
 
     @Transactional
     public UserResponseDto updateEmailAlertSetting(Long userId, Boolean isEmailAlertEnabled) {
@@ -127,6 +96,7 @@ public class UserService {
                 user.updateEmailAlert7Days(true);
                 user.updateEmailAlert3Days(true);
                 user.updateEmailAlert1Day(true);
+                user.updateEmailAlertDDay(true);
             }
         }
         
@@ -143,12 +113,40 @@ public class UserService {
             user.updateEmailAlert1Day(request.getEmailAlert1Day());
         }
         
+        if (request.getEmailAlertDDay() != null) {
+            user.updateEmailAlertDDay(request.getEmailAlertDDay());
+        }
+        
         // 모든 세부 알림이 꺼지면 전체 이메일 알림도 비활성화
-        if (!user.getEmailAlert7Days() && !user.getEmailAlert3Days() && !user.getEmailAlert1Day()) {
+        if (!user.getEmailAlert7Days() && !user.getEmailAlert3Days() && !user.getEmailAlert1Day() && !user.getEmailAlertDDay()) {
             user.updateEmailAlertEnabled(false);
         }
         
         User saved = userRepository.save(user);
         return UserEmailSettingsDto.from(saved);
+    }
+
+    @Transactional
+    public UserResponseDto completeOAuth2Registration(String email, CompleteRegistrationRequestDto request) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new EntityNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email);
+        }
+
+        // 이미 등록이 완료된 사용자인지 확인
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            throw new IllegalStateException("이미 등록이 완료된 사용자입니다.");
+        }
+
+        // 사용자 정보 업데이트
+        user.updateName(request.getName());
+        user.updatePassword(passwordEncoder.encode(request.getPassword()));
+        
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) {
+            user.updatePhoneNumber(request.getPhoneNumber());
+        }
+
+        User saved = userRepository.save(user);
+        return UserResponseDto.from(saved);
     }
 }

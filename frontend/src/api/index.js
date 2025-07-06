@@ -3,11 +3,7 @@ import toast from 'react-hot-toast';
 
 // 인증 관련 API
 export const authAPI = {
-  // 로그인
-  login: async (credentials) => {
-    const response = await api.post('/api/auth/login', credentials);
-    return response.data;
-  },
+  // 기존 이메일/비밀번호 로그인 제거 - Google OAuth2만 사용
 
   // 로그아웃
   logout: async () => {
@@ -26,21 +22,17 @@ export const authAPI = {
     const response = await api.get('/api/auth/me');
     return response.data;
   },
+
+  // 신규 사용자 등록 완성
+  completeRegistration: async (userData) => {
+    const response = await api.post('/api/auth/complete-registration', userData);
+    return response.data;
+  },
 };
 
 // 사용자 관련 API
 export const userAPI = {
-  // 회원가입
-  register: async (userData) => {
-    const response = await api.post('/api/users', userData);
-    return response.data;
-  },
-
-  // 이메일 중복 확인
-  checkEmail: async (email) => {
-    const response = await api.get(`/api/users/exists?email=${email}`);
-    return response.data;
-  },
+  // 기존 회원가입 제거 - Google OAuth2로만 가입
 
   // 사용자 정보 조회
   getUser: async (userId) => {
@@ -48,11 +40,7 @@ export const userAPI = {
     return response.data;
   },
 
-  // 사용자 정보 업데이트
-  updateUser: async (userId, userData) => {
-    const response = await api.put(`/api/users/${userId}`, userData);
-    return response.data;
-  },
+  // 기존 사용자 정보 업데이트 제거 - OAuth2 등록 완성으로 대체
 
   // 이메일 알림 설정 업데이트
   updateEmailAlertSetting: async (userId, isEmailAlertEnabled) => {
@@ -192,6 +180,11 @@ export const handleApiError = (error) => {
 // 성공 메시지 표시 유틸리티
 export const showSuccessMessage = (message) => {
   toast.success(message);
+};
+
+// 에러 메시지 표시 유틸리티
+export const showErrorMessage = (message) => {
+  toast.error(message);
 };
 
 // 정보 메시지 표시 유틸리티

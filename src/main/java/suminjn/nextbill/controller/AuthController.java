@@ -5,10 +5,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import suminjn.nextbill.dto.LoginRequestDto;
 import suminjn.nextbill.dto.LoginResponseDto;
 import suminjn.nextbill.dto.RefreshTokenRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
+import suminjn.nextbill.dto.CompleteRegistrationRequestDto;
 import suminjn.nextbill.security.JwtProvider;
 import suminjn.nextbill.service.AuthService;
 import suminjn.nextbill.service.UserService;
@@ -22,11 +22,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final UserService userService;
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-        LoginResponseDto tokens = authService.login(request);
-        return ResponseEntity.ok(tokens);
-    }
+    // 기존 이메일/비밀번호 로그인 제거 - Google OAuth2만 사용
 
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponseDto> refresh(@Valid @RequestBody RefreshTokenRequestDto request) {
@@ -53,6 +49,20 @@ public class AuthController {
         
         String email = jwtProvider.getEmailFromToken(token);
         UserResponseDto user = userService.getUserResponseByEmail(email);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/complete-registration")
+    public ResponseEntity<UserResponseDto> completeRegistration(
+            @Valid @RequestBody CompleteRegistrationRequestDto request,
+            HttpServletRequest httpRequest) {
+        String token = resolveToken(httpRequest);
+        if (token == null || !jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        String email = jwtProvider.getEmailFromToken(token);
+        UserResponseDto user = userService.completeOAuth2Registration(email, request);
         return ResponseEntity.ok(user);
     }
 

@@ -1,136 +1,98 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React from 'react';
 import {
   Container,
   Paper,
-  TextField,
   Button,
   Typography,
   Box,
-  CircularProgress,
   useTheme,
+  Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { useAuth } from '../contexts/AuthContext';
-import { handleApiError, showSuccessMessage } from '../api';
+import { Google as GoogleIcon, DarkMode, LightMode } from '@mui/icons-material';
 import Footer from '../components/Footer/Footer';
+import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
   const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
-  const [formData, setFormData] = useState({
-    userEmail: '',
-    userPassword: '',
-  });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useAppTheme();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // 에러 메시지 초기화
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: '',
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.userEmail) {
-      newErrors.userEmail = '이메일을 입력해주세요.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.userEmail)) {
-      newErrors.userEmail = '유효한 이메일 형식이 아닙니다.';
-    }
-    
-    if (!formData.userPassword) {
-      newErrors.userPassword = '비밀번호를 입력해주세요.';
-    }
-    
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await login(formData);
-      showSuccessMessage('로그인 성공!');
-      navigate('/dashboard');
-    } catch (error) {
-      handleApiError(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGoogleLogin = () => {
+    // Google OAuth2 로그인 URL로 리디렉션
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%)',
+        background: isDarkMode
+          ? 'linear-gradient(135deg, rgba(30, 32, 44, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)'
+          : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', py: 4 }}>
-        <Container component="main" maxWidth="sm">
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          {/* 로고와 헤더 */}
-          <Box
+      {/* 다크모드 토글 버튼 */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 1000,
+        }}
+      >
+        <Tooltip title={isDarkMode ? '라이트 모드로 변경' : '다크 모드로 변경'}>
+          <IconButton
+            onClick={toggleDarkMode}
             sx={{
-              mb: 4,
-              textAlign: 'center',
-              '& > *': {
-                animation: 'fadeInUp 0.6s ease-out',
+              bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
               },
             }}
           >
-            <Box
+            {isDarkMode ? (
+              <LightMode sx={{ color: 'orange' }} />
+            ) : (
+              <DarkMode sx={{ color: 'navy' }} />
+            )}
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <Container
+        maxWidth="sm"
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 8,
+        }}
+      >
+        <Paper
+          elevation={isDarkMode ? 0 : 10}
+          sx={{
+            p: 6,
+            width: '100%',
+            backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 3,
+            border: isDarkMode ? '1px solid rgba(75, 85, 99, 0.3)' : 'none',
+          }}
+        >
+          {/* 로고 및 제목 */}
+          <Box textAlign="center" mb={4}>
+            <Typography
+              variant="h3"
+              component="h1"
+              fontWeight="bold"
               sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '20px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: 'white',
-                margin: '0 auto 24px',
-                boxShadow: '0 20px 40px rgba(99, 102, 241, 0.3)',
-              }}
-            >
-              N
-            </Box>
-            <Typography 
-              variant="h3" 
-              sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -139,142 +101,53 @@ const LoginPage = () => {
             >
               NextBill
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400 }}>
-              구독 서비스를 스마트하게 관리하세요
+            <Typography variant="h6" color="text.secondary" fontWeight={500}>
+              구독 서비스 관리의 새로운 경험
             </Typography>
           </Box>
 
-          <Paper 
-            elevation={0}
-            sx={{ 
-              padding: { xs: 3, sm: 4 }, 
-              width: '100%',
-              borderRadius: 3,
-              boxShadow: isDarkMode 
-                ? '0 20px 40px rgba(0, 0, 0, 0.4)' 
-                : '0 20px 40px rgba(0, 0, 0, 0.1)',
-              border: isDarkMode 
-                ? '1px solid rgba(51, 65, 85, 0.6)' 
-                : '1px solid rgba(0, 0, 0, 0.06)',
-              backgroundColor: isDarkMode 
-                ? theme.palette.background.paper 
-                : '#ffffff',
-              backdropFilter: 'blur(10px)',
+          {/* 설명 */}
+          <Box textAlign="center" mb={4}>
+            <Typography variant="body1" color="text.secondary" mb={2}>
+              Google 계정으로 간편하게 시작하세요
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              구독 서비스 관리와 결제일 알림을 한 곳에서
+            </Typography>
+          </Box>
+
+          {/* Google 로그인 버튼 */}
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            onClick={handleGoogleLogin}
+            startIcon={<GoogleIcon />}
+            sx={{
+              py: 1.5,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #4285f4 0%, #34a853 50%, #ea4335 100%)',
+              backgroundSize: '200% 200%',
+              animation: 'gradient 3s ease infinite',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #d33b2c 100%)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(66, 133, 244, 0.3)',
+              },
+              transition: 'all 0.3s ease',
+              '@keyframes gradient': {
+                '0%': { backgroundPosition: '0% 50%' },
+                '50%': { backgroundPosition: '100% 50%' },
+                '100%': { backgroundPosition: '0% 50%' },
+              },
             }}
           >
-            <Typography 
-              variant="h5" 
-              align="center" 
-              sx={{ 
-                mb: 3,
-                fontWeight: 600,
-                color: 'text.primary',
-              }}
-            >
-              로그인
-            </Typography>
-            
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="userEmail"
-                label="이메일"
-                name="userEmail"
-                autoComplete="email"
-                autoFocus
-                value={formData.userEmail}
-                onChange={handleChange}
-                error={!!errors.userEmail}
-                helperText={errors.userEmail}
-                disabled={isLoading}
-                sx={{
-                  mb: 2,
-                  '& .MuiOutlinedInput-root': {
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                    },
-                  },
-                }}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="userPassword"
-                label="비밀번호"
-                type="password"
-                id="userPassword"
-                autoComplete="current-password"
-                value={formData.userPassword}
-                onChange={handleChange}
-                error={!!errors.userPassword}
-                helperText={errors.userPassword}
-                disabled={isLoading}
-                sx={{
-                  mb: 3,
-                  '& .MuiOutlinedInput-root': {
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                    },
-                  },
-                }}
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                disabled={isLoading}
-                sx={{ 
-                  mt: 2, 
-                  mb: 3,
-                  py: 1.5,
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                  boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5855eb 0%, #7c3aed 100%)',
-                    boxShadow: '0 6px 20px rgba(99, 102, 241, 0.6)',
-                    transform: 'translateY(-2px)',
-                  },
-                  '&:disabled': {
-                    background: 'rgba(0, 0, 0, 0.12)',
-                  },
-                }}
-              >
-                {isLoading ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={20} color="inherit" />
-                    로그인 중...
-                  </Box>
-                ) : (
-                  '로그인'
-                )}
-              </Button>
-              <Box textAlign="center">
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  계정이 없으신가요?{' '}
-                  <Link 
-                    to="/register" 
-                    style={{ 
-                      textDecoration: 'none', 
-                      color: '#6366f1', 
-                      fontWeight: 600,
-                    }}
-                  >
-                    회원가입
-                  </Link>
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Box>
+            Google로 계속하기
+          </Button>
+        </Paper>
       </Container>
-      </Box>
+
       <Footer />
     </Box>
   );

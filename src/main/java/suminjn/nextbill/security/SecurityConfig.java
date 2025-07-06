@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import suminjn.nextbill.service.OAuth2UserService;
 
 import java.util.Arrays;
 
@@ -23,16 +24,21 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final OAuth2UserService oAuth2UserService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/**", "/api/auth/**", "/api/test/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

@@ -61,13 +61,21 @@ export const AuthProvider = ({ children }) => {
   // 초기 인증 상태 확인
   useEffect(() => {
     const initializeAuth = () => {
+      console.log('AuthContext: Initializing auth...');
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
       const user = localStorage.getItem('user');
 
+      console.log('AuthContext: Tokens found:', { 
+        hasAccessToken: !!accessToken, 
+        hasRefreshToken: !!refreshToken, 
+        hasUser: !!user 
+      });
+
       if (accessToken && refreshToken && user) {
         try {
           const userData = JSON.parse(user);
+          console.log('AuthContext: User data parsed:', userData);
           dispatch({
             type: AuthActionTypes.LOGIN_SUCCESS,
             payload: {
@@ -77,10 +85,12 @@ export const AuthProvider = ({ children }) => {
             },
           });
         } catch (error) {
+          console.error('AuthContext: Error parsing user data:', error);
           // 저장된 데이터가 손상된 경우 로그아웃 처리
           logout();
         }
       } else {
+        console.log('AuthContext: No valid tokens found, setting loading to false');
         dispatch({ type: AuthActionTypes.SET_LOADING, payload: false });
       }
     };
@@ -88,39 +98,19 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // 로그인
-  const login = async (credentials) => {
+  // 기존 이메일/비밀번호 로그인 제거 - Google OAuth2만 사용
+
+  // OAuth2 토큰으로 로그인
+  const loginWithToken = async (accessToken, refreshToken) => {
     try {
       dispatch({ type: AuthActionTypes.SET_LOADING, payload: true });
       
-      console.log('Attempting login with:', credentials);
-      const response = await authAPI.login(credentials);
-      console.log('Login response:', response);
-      
-      const { accessToken, refreshToken, user } = response;
-
-      // 토큰 우선 저장
+      // 토큰 저장
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
-      // 사용자 정보 처리
-      let userData = user;
-      if (!userData || !userData.email) {
-        console.warn('User info not found in response, fetching separately...');
-        try {
-          userData = await authAPI.getCurrentUser();
-          console.log('Fetched user data:', userData);
-        } catch (fetchError) {
-          console.error('Failed to fetch user info:', fetchError);
-          // 최후의 수단으로 이메일 기반 임시 사용자 객체 생성
-          userData = {
-            email: credentials.userEmail,
-            needsUserInfo: true
-          };
-        }
-      }
-
-      // 로컬 스토리지에 저장
+      // 토큰으로 사용자 정보 가져오기
+      const userData = await authAPI.getCurrentUser();
       localStorage.setItem('user', JSON.stringify(userData));
 
       dispatch({
@@ -130,7 +120,11 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Token login error:', error);
+      // 토큰이 유효하지 않은 경우 정리
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       dispatch({ type: AuthActionTypes.SET_LOADING, payload: false });
       throw error;
     }
@@ -162,7 +156,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     ...state,
-    login,
+    loginWithToken,
     logout,
     updateUser,
   };
