@@ -3,6 +3,7 @@ package suminjn.nextbill.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import suminjn.nextbill.dto.SubscriptionAlertEvent;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final Environment environment;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -39,7 +41,7 @@ public class EmailService {
         return String.format("안녕하세요.\n\n다음 구독 결제가 예정되어 있습니다:\n\n서비스명: %s\n결제 예정일: %s (%s)\n\n감사합니다.\n- NextBill",
                 event.getServiceName(),
                 event.getAlertDate(),
-                event.getAlertType());
+                event.getAlertTypeDisplay()); // D-7, D-3, D-1 형식으로 표시
     }
 
     public void sendPaymentNotificationEmail(User user, Notification notification) {
@@ -76,8 +78,14 @@ public class EmailService {
         return content.toString();
     }
 
-    // 테스트용 이메일 발송 메서드
+    // 테스트용 이메일 발송 메서드 (개발 환경에서만 사용)
     public void sendTestEmail(String toEmail, String testMessage) {
+        // 개발 환경에서만 실행
+        if (!isLocalProfile()) {
+            log.warn("테스트 이메일 발송은 개발 환경에서만 가능합니다.");
+            throw new IllegalStateException("테스트 이메일 발송은 개발 환경에서만 가능합니다.");
+        }
+        
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(toEmail);
@@ -91,6 +99,16 @@ public class EmailService {
             log.error("❌ 테스트 이메일 전송 실패: {}", toEmail, e);
             throw new RuntimeException("이메일 발송 실패: " + e.getMessage(), e);
         }
+    }
+    
+    private boolean isLocalProfile() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        for (String profile : activeProfiles) {
+            if ("local".equals(profile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String buildTestEmailContent(String testMessage) {

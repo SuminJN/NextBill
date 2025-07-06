@@ -64,6 +64,10 @@ public class Subscription extends BaseTimeEntity {
         this.nextPaymentDate = nextPaymentDate;
     }
 
+    public void updateNextPaymentDate(LocalDate nextPaymentDate) {
+        this.nextPaymentDate = nextPaymentDate;
+    }
+
     public void setUser(User user) {
         this.user = user;
     }

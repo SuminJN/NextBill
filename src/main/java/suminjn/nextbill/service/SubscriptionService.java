@@ -79,7 +79,11 @@ public class SubscriptionService {
     }
 
     public List<Subscription> findDueToday(LocalDate date) {
-        return subscriptionRepository.findByIsPausedFalseAndNextPaymentDate(date);
+        return subscriptionRepository.findByIsPausedFalseAndNextPaymentDateWithUser(date);
+    }
+
+    public List<Subscription> findOverdueSubscriptions(LocalDate today) {
+        return subscriptionRepository.findOverdueSubscriptionsWithUser(today);
     }
 
     public Subscription save(Subscription subscription) {

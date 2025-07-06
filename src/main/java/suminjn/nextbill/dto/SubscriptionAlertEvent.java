@@ -19,6 +19,7 @@ public class SubscriptionAlertEvent {
     private String userEmail;
     private String serviceName;
     private AlertType alertType;
+    private String alertTypeDisplay; // 사용자 친화적 표시용
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate alertDate;
