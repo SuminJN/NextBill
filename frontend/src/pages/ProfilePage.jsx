@@ -48,12 +48,28 @@ const formatDate = (dateString) => {
 const calculateDaysSinceJoined = (createdAt) => {
   if (!createdAt) return 0;
   
-  const joinDate = new Date(createdAt);
-  const currentDate = new Date();
-  const timeDiff = currentDate - joinDate;
-  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-  
-  return daysDiff;
+  try {
+    const joinDate = new Date(createdAt);
+    const currentDate = new Date();
+    
+    // 유효한 날짜인지 확인
+    if (isNaN(joinDate.getTime())) {
+      return 0;
+    }
+    
+    // 시간을 0으로 맞춰서 순수한 날짜 차이만 계산
+    const joinDateOnly = new Date(joinDate.getFullYear(), joinDate.getMonth(), joinDate.getDate());
+    const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    
+    const timeDiff = currentDateOnly - joinDateOnly;
+    const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    
+    // 음수가 나올 경우 0으로 처리
+    return Math.max(0, daysDiff);
+  } catch (error) {
+    console.error('날짜 계산 오류:', error);
+    return 0;
+  }
 };
 
 const ProfilePage = () => {
