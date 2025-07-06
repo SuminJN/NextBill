@@ -6,17 +6,21 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (including devDependencies for build)
+# Install dependencies
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Set environment variable for build
-ENV VITE_API_URL=http://13.124.61.42:8080
+# Create .env file with production API URL
+RUN echo "VITE_API_URL=http://13.124.61.42:8080" > .env
 
-# Build application
-RUN npx vite build --mode production
+# Debug: Show environment
+RUN cat .env
+RUN echo "Building with VITE_API_URL=http://13.124.61.42:8080"
+
+# Build application with verbose output
+RUN npm run build 2>&1 || npx vite build --mode production
 
 # Production stage
 FROM nginx:alpine
