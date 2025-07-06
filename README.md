@@ -129,7 +129,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ### ERD (Entity Relationship Diagram)
 
-![NextBill ERD](https://github.com/user-attachments/assets/6577b985-095b-4edd-8e58-01309f7b1b7d)
+![NextBill](https://github.com/user-attachments/assets/a01a37ea-39ae-41d0-a581-f2316a1a5f0a)
 
 ### 주요 테이블
 
