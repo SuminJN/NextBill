@@ -1,14 +1,12 @@
 package suminjn.nextbill.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import suminjn.nextbill.domain.User;
 import suminjn.nextbill.dto.UpdateEmailSettingsRequestDto;
 import suminjn.nextbill.dto.UserEmailSettingsDto;
 import suminjn.nextbill.dto.UserResponseDto;
-import suminjn.nextbill.dto.CompleteRegistrationRequestDto;
 import suminjn.nextbill.exception.EntityNotFoundException;
 import suminjn.nextbill.repository.UserRepository;
 
@@ -19,7 +17,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -124,29 +121,5 @@ public class UserService {
         
         User saved = userRepository.save(user);
         return UserEmailSettingsDto.from(saved);
-    }
-
-    @Transactional
-    public UserResponseDto completeOAuth2Registration(String email, CompleteRegistrationRequestDto request) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new EntityNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email);
-        }
-
-        // 이미 등록이 완료된 사용자인지 확인
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            throw new IllegalStateException("이미 등록이 완료된 사용자입니다.");
-        }
-
-        // 사용자 정보 업데이트
-        user.updateName(request.getName());
-        user.updatePassword(passwordEncoder.encode(request.getPassword()));
-        
-        if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) {
-            user.updatePhoneNumber(request.getPhoneNumber());
-        }
-
-        User saved = userRepository.save(user);
-        return UserResponseDto.from(saved);
     }
 }

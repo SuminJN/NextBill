@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import suminjn.nextbill.dto.LoginResponseDto;
 import suminjn.nextbill.dto.RefreshTokenRequestDto;
 import suminjn.nextbill.dto.UserResponseDto;
-import suminjn.nextbill.dto.CompleteRegistrationRequestDto;
 import suminjn.nextbill.security.JwtProvider;
 import suminjn.nextbill.service.AuthService;
 import suminjn.nextbill.service.UserService;
@@ -49,20 +48,6 @@ public class AuthController {
         
         String email = jwtProvider.getEmailFromToken(token);
         UserResponseDto user = userService.getUserResponseByEmail(email);
-        return ResponseEntity.ok(user);
-    }
-
-    @PostMapping("/complete-registration")
-    public ResponseEntity<UserResponseDto> completeRegistration(
-            @Valid @RequestBody CompleteRegistrationRequestDto request,
-            HttpServletRequest httpRequest) {
-        String token = resolveToken(httpRequest);
-        if (token == null || !jwtProvider.validateToken(token)) {
-            return ResponseEntity.status(401).build();
-        }
-        
-        String email = jwtProvider.getEmailFromToken(token);
-        UserResponseDto user = userService.completeOAuth2Registration(email, request);
         return ResponseEntity.ok(user);
     }
 

@@ -22,12 +22,6 @@ export const authAPI = {
     const response = await api.get('/api/auth/me');
     return response.data;
   },
-
-  // 신규 사용자 등록 완성
-  completeRegistration: async (userData) => {
-    const response = await api.post('/api/auth/complete-registration', userData);
-    return response.data;
-  },
 };
 
 // 사용자 관련 API

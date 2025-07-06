@@ -1,39 +1,45 @@
-# Multi-stage build for Spring Boot
-FROM eclipse-temurin:17-jdk-alpine AS builder
+# Build stage
+FROM openjdk:17-jdk-slim as build
 
 WORKDIR /app
+
+# Copy gradle files
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
+
+# Copy source code
 COPY src src
 
-# Grant execute permission and build
-RUN chmod +x ./gradlew
-RUN ./gradlew bootJar --no-daemon
+# Make gradlew executable
+RUN chmod +x gradlew
+
+# Build application
+RUN ./gradlew bootJar
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
 # Install curl for health check
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user (Alpine Linux syntax)
-RUN addgroup -g 1001 nextbill && adduser -D -u 1001 -G nextbill nextbill
+# Copy built jar from build stage
+COPY --from=build /app/build/libs/*.jar app.jar
 
-# Copy jar from builder stage
-COPY --from=builder /app/build/libs/*.jar app.jar
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
-# Change ownership
-RUN chown -R nextbill:nextbill /app
-USER nextbill
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
+# Expose port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Run application
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
