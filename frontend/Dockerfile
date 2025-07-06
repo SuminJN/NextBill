@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build application
-RUN npm run build
+RUN npx vite build --mode production
 
 # Production stage
 FROM nginx:alpine
