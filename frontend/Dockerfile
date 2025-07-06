@@ -5,7 +5,9 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
+
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
 # Copy source and build
 COPY . .
@@ -20,11 +22,16 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Create necessary directories and set permissions
+RUN mkdir -p /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp \
+    /var/cache/nginx/fastcgi_temp /var/cache/nginx/uwsgi_temp \
+    /var/cache/nginx/scgi_temp
+
 # Add non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextbill -u 1001
+RUN adduser -S nextbill -u 1001 -G nodejs
 
-# Change ownership
+# Change ownership of necessary directories
 RUN chown -R nextbill:nodejs /usr/share/nginx/html
 RUN chown -R nextbill:nodejs /var/cache/nginx
 RUN chown -R nextbill:nodejs /var/log/nginx
@@ -32,6 +39,7 @@ RUN chown -R nextbill:nodejs /etc/nginx/conf.d
 RUN touch /var/run/nginx.pid
 RUN chown -R nextbill:nodejs /var/run/nginx.pid
 
+# Switch to non-root user
 USER nextbill
 
 EXPOSE 3000
