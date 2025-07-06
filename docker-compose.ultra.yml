@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # 데이터베이스 서비스
+  postgres:
+    image: postgres:15-alpine
+    container_name: nextbill-postgres-ultra
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nextbill-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 서비스 (메모리 제한)
+  redis:
+    image: redis:7-alpine
+    container_name: nextbill-redis-ultra
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    networks:
+      - nextbill-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Kafka 서비스 (메모리 제한)
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: nextbill-kafka-ultra
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_HEAP_OPTS: "-Xmx256m -Xms256m"  # 메모리 제한
+    depends_on:
+      - zookeeper
+    networks:
+      - nextbill-network
+
+  # Zookeeper 서비스 (메모리 제한)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: nextbill-zookeeper-ultra
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_HEAP_OPTS: "-Xmx128m -Xms128m"  # 메모리 제한
+    networks:
+      - nextbill-network
+
+  # 백엔드 서비스 (메모리 제한)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextbill-backend-ultra
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nextbill-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 프론트엔드 서비스 (극한 최적화)
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.ultra
+    container_name: nextbill-frontend-ultra
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - nextbill-network
+
+  # Nginx 리버스 프록시 (메모리 최적화)
+  nginx:
+    image: nginx:alpine
+    container_name: nextbill-nginx-ultra
+    volumes:
+      - ./nginx.ultra.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - nextbill-network
+
+networks:
+  nextbill-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
