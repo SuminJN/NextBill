@@ -29,7 +29,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' NODE_ENV=production vite build --mode production",
+    "build:fast": "NODE_OPTIONS='--max-old-space-size=2048' vite build --mode production --minify esbuild",
     "preview": "vite preview",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },

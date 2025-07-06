@@ -6,12 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build)
-RUN npm ci
+# Install all dependencies with npm cache optimization
+RUN npm ci --prefer-offline --no-audit
 
-# Copy source and build with increased memory limit
+# Copy source and build with optimizations
 COPY . .
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" \
+    NODE_ENV=production \
+    npm run build
 
 # Production stage with nginx
 FROM nginx:alpine
