@@ -1,16 +1,10 @@
 #!/bin/bash
 
 # SSL 설정 스크립트
-# 사용법: ./setup-ssl.sh your-domain.com
+# 사용법: ./setup-ssl.sh [IP주소 또는 도메인명]
 
-if [ $# -eq 0 ]; then
-    echo "사용법: $0 <도메인명>"
-    echo "예시: $0 nextbill.example.com"
-    exit 1
-fi
-
-DOMAIN=$1
-EMAIL="admin@${DOMAIN}"
+DOMAIN=${1:-13.124.61.42}
+EMAIL="admin@example.com"
 
 echo "🔒 ${DOMAIN}에 대한 SSL 인증서를 설정합니다..."
 
