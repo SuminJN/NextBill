@@ -40,26 +40,6 @@ docker-compose -f docker-compose-prod.yml up -d
 echo "⏳ 서비스 상태를 확인합니다..."
 sleep 30
 
-# 헬스체크
-echo "🔍 헬스체크를 수행합니다..."
-for i in {1..10}; do
-    if curl -f http://localhost/health > /dev/null 2>&1; then
-        echo "✅ 프론트엔드가 정상적으로 시작되었습니다."
-        break
-    fi
-    echo "⏳ 프론트엔드 시작을 기다리는 중... ($i/10)"
-    sleep 10
-done
-
-for i in {1..10}; do
-    if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
-        echo "✅ 백엔드가 정상적으로 시작되었습니다."
-        break
-    fi
-    echo "⏳ 백엔드 시작을 기다리는 중... ($i/10)"
-    sleep 10
-done
-
 # 최종 상태 출력
 echo ""
 echo "🎉 배포가 완료되었습니다!"
@@ -70,7 +50,6 @@ echo ""
 echo "🌐 접속 정보:"
 echo "  - 프론트엔드: http://localhost"
 echo "  - 백엔드 API: http://localhost:8080"
-echo "  - 백엔드 헬스체크: http://localhost:8080/actuator/health"
 echo ""
 echo "📝 로그 확인:"
 echo "  - docker-compose -f docker-compose-prod.yml logs -f [서비스명]"
