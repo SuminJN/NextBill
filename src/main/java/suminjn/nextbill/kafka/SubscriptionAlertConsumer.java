@@ -11,6 +11,7 @@ import suminjn.nextbill.domain.Subscription;
 import suminjn.nextbill.dto.SubscriptionAlertEvent;
 import suminjn.nextbill.service.AlertStatusService;
 import suminjn.nextbill.service.EmailService;
+import suminjn.nextbill.service.RedisService;
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class SubscriptionAlertConsumer {
 
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
+    private final RedisService redisService;
     private final AlertStatusService alertStatusService;
 
     @KafkaListener(topics = "subscription.alert.scheduled", groupId = "nextbill-alert-consumer")
@@ -29,6 +31,13 @@ public class SubscriptionAlertConsumer {
 
             log.info("📥 Kafka 알림 수신: {}", event);
 
+            // Redis 캐시로 빠른 중복 체크
+            if (redisService.isAlreadySent(event)) {
+                log.info("⚠️ 이미 전송된 알림 (Redis 캐시): {}", event);
+                return;
+            }
+
+            // DB에서도 중복 체크 (Redis 미스 케이스 대비)
             boolean alreadySent = alertStatusService.isAlreadySent(
                     event.getSubscriptionId(),
                     event.getAlertDate(),
@@ -36,12 +45,19 @@ public class SubscriptionAlertConsumer {
             );
 
             if (alreadySent) {
-                log.info("⚠️ 이미 전송된 알림 (중복 방지): {}", event);
+                log.info("⚠️ 이미 전송된 알림 (DB 확인): {}", event);
+                // Redis에도 마킹
+                redisService.markAsSent(event);
                 return;
             }
 
+            // 이메일 발송
             emailService.sendAlert(event);
 
+            // Redis 캐시에 마킹
+            redisService.markAsSent(event);
+
+            // DB에 상태 저장
             alertStatusService.save(
                     AlertStatus.builder()
                             .subscription(Subscription.builder().subscriptionId(event.getSubscriptionId()).build())
