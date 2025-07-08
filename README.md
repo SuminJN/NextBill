@@ -1,4 +1,6 @@
-# # NextBill [🌐 서비스 바로가기](https://my.nextbill.o-r.kr)
+# NextBill
+
+## [📌 서비스 바로가기](https://my.nextbill.o-r.kr)
 
 **NextBill**은 구독 서비스의 복잡한 결제 일정을 한 곳에서 관리할 수 있는 스마트한 구독 관리 플랫폼입니다.  
 Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템을 통해 구독 결제를 놓치지 않도록 도와드립니다.
