@@ -6,25 +6,54 @@ export const authAPI = {
   // 기존 이메일/비밀번호 로그인 제거 - Google OAuth2만 사용
 
   // 로그아웃
-  logout: async () => {
-    const response = await api.post('/api/auth/logout');
-    return response.data;
-  },
-
-  // 토큰 갱신
-  refreshToken: async (refreshToken) => {
-    const response = await api.post('/api/auth/refresh', { refreshToken });
-    return response.data;
-  },
-
-  // 현재 사용자 정보 조회
-  getCurrentUser: async () => {
-    const response = await api.get('/api/auth/me');
-    return response.data;
-  },
+  logout: () => api.post('/auth/logout'),
+  // 토큰 재발급
+  refreshToken: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
 };
 
-// 사용자 관련 API
+// 응답 인터셉터 설정
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    // 401 오류이고, 재시도한 요청이 아닐 경우
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // 재시도 플래그 설정
+
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const { data } = await authAPI.refreshToken(refreshToken);
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data;
+
+          // 새로운 토큰 저장
+          localStorage.setItem('accessToken', newAccessToken);
+          localStorage.setItem('refreshToken', newRefreshToken);
+
+          // API 인스턴스와 원래 요청의 헤더 업데이트
+          api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
+          // 실패했던 요청 재시도
+          return api(originalRequest);
+        } catch (refreshError) {
+          // 리프레시 토큰이 유효하지 않은 경우
+          console.error('Unable to refresh token:', refreshError);
+          // 로컬 스토리지 정리
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          // 로그인 페이지로 리디렉션
+          window.location.href = '/login'; 
+          return Promise.reject(refreshError);
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const userAPI = {
   // 기존 회원가입 제거 - Google OAuth2로만 가입
 
