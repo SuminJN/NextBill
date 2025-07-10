@@ -20,7 +20,7 @@ const LoginPage = () => {
 
   const handleGoogleLogin = () => {
     // Google OAuth2 로그인 URL로 리디렉션
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const apiUrl = import.meta.env.API_URL || 'http://localhost:8080';
     window.location.href = `${apiUrl}/oauth2/authorization/google`;
   };
 
