@@ -1,0 +1,30 @@
+# 프론트엔드 로컬 빌드 전용 Dockerfile
+# 사용법: 로컬에서 먼저 npm run build 실행 후 도커 빌드
+
+FROM nginx:alpine
+
+# 로컬에서 빌드된 dist 폴더 복사
+COPY dist /usr/share/nginx/html
+
+# nginx 설정 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Create non-root user
+RUN addgroup -g 1001 -S nginx-user && \
+    adduser -S nginx-user -G nginx-user
+
+# Change ownership
+RUN chown -R nginx-user:nginx-user /usr/share/nginx/html
+RUN chown -R nginx-user:nginx-user /var/cache/nginx
+RUN chown -R nginx-user:nginx-user /var/log/nginx
+RUN chown -R nginx-user:nginx-user /etc/nginx/conf.d
+RUN touch /var/run/nginx.pid
+RUN chown -R nginx-user:nginx-user /var/run/nginx.pid
+
+USER nginx-user
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
