@@ -205,3 +205,5 @@ frontend/.env.production.local
 .env.production
 application-local.yml
 application-prod.yml
+
+.bin/
