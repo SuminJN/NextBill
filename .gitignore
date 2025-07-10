@@ -202,7 +202,7 @@ frontend/.env.production.local
 # 환경변수 파일
 .env
 .env.local
-.env.production
+.env.prod
 application-local.yml
 application-prod.yml
 
