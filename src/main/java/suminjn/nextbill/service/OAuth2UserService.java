@@ -21,17 +21,24 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        log.info("OAuth2UserService.loadUser 호출됨");
+        
         OAuth2User oAuth2User = super.loadUser(userRequest);
+        log.info("Google에서 사용자 정보 수신 완료: {}", oAuth2User.getAttributes());
         
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         String userNameAttributeName = userRequest.getClientRegistration()
                 .getProviderDetails()
                 .getUserInfoEndpoint()
                 .getUserNameAttributeName();
+        
+        log.info("Registration ID: {}, UserNameAttribute: {}", registrationId, userNameAttributeName);
 
         OAuth2UserInfo userInfo = OAuth2UserInfo.of(registrationId, oAuth2User.getAttributes());
+        log.info("OAuth2UserInfo 생성 완료 - 이메일: {}", userInfo.getEmail());
         
         User user = saveOrUpdate(userInfo);
+        log.info("사용자 저장/업데이트 완료 - ID: {}", user.getUserId());
         
         return new OAuth2UserPrincipal(user, oAuth2User.getAttributes(), userNameAttributeName);
     }

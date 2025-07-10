@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,18 +26,28 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final OAuth2UserService oAuth2UserService;
+    private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
+    private final CustomOAuth2AuthorizationRequestRepository customAuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // OAuth2를 위해 세션 허용
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestRepository(customAuthorizationRequestRepository)
+                                .authorizationRequestResolver(authorizationRequestResolver)
+                        )
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 )
@@ -55,7 +66,9 @@ public class SecurityConfig {
             "http://localhost:5173",  // Vite 기본 포트
             "http://127.0.0.1:5173",
             "http://13.124.61.42",    // 프로덕션 IP
-            "http://13.124.61.42:8081" // nginx 포트
+            "https://13.124.61.42",
+            "https://my.nextbill.o-r.kr",
+            "https://accounts.google.com"  // Google OAuth2
         ));
         
         // 허용할 HTTP 메서드
@@ -71,7 +84,9 @@ public class SecurityConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "Cookie",
+            "Set-Cookie"
         ));
         
         // 인증 정보 허용 (쿠키, Authorization 헤더 등)
@@ -80,7 +95,9 @@ public class SecurityConfig {
         // 노출할 헤더
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
-            "Content-Type"
+            "Content-Type",
+            "Set-Cookie",
+            "X-Session-Debug"  // 디버깅용
         ));
         
         // Preflight 요청 캐시 시간 (초)

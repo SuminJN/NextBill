@@ -71,6 +71,18 @@ spring:
     port: ${REDIS_PORT}
     database: 0
     timeout: 2000
+    
+  # 세션 설정 (OAuth2를 위한 세션 관리)
+  session:
+    store-type: memory
+    timeout: 30m
+    cookie:
+      name: JSESSIONID
+      max-age: 1800  # 30분
+      secure: false  # 로컬에서는 false, 프로덕션에서는 true
+      http-only: true
+      same-site: none  # OAuth2 cross-origin 요청을 위해 none으로 설정
+      path: /
 
 # JWT 토큰 설정
 jwt:
@@ -81,3 +93,16 @@ jwt:
 # 서버 설정
 server:
   port: 8080
+
+# 애플리케이션 설정
+app:
+  frontend:
+    url: ${FRONTEND_URL}
+
+# 로깅 설정
+logging:
+  level:
+    suminjn.nextbill: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web: DEBUG
