@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(50),
     phone_number VARCHAR(20),
     is_email_alert_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    email_alert_7days BOOLEAN NOT NULL DEFAULT TRUE,
-    email_alert_3days BOOLEAN NOT NULL DEFAULT TRUE,
-    email_alert_1day BOOLEAN NOT NULL DEFAULT TRUE,
-    email_alert_dday BOOLEAN NOT NULL DEFAULT TRUE,
+    email_alert7days BOOLEAN NOT NULL DEFAULT TRUE,
+    email_alert3days BOOLEAN NOT NULL DEFAULT TRUE,
+    email_alert1day BOOLEAN NOT NULL DEFAULT TRUE,
+    email_alertdday BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     INDEX idx_users_email (email),
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS alert_statuses (
 -- 프로덕션에서는 주석 처리하거나 제거하세요
 
 -- 테스트 사용자 생성
-INSERT IGNORE INTO users (email, name, is_email_alert_enabled, email_alert_7days, email_alert_3days, email_alert_1day, email_alert_dday) 
+INSERT IGNORE INTO users (email, name, is_email_alert_enabled, email_alert7days, email_alert3days, email_alert1day, email_alertdday) 
 VALUES 
 ('test@example.com', '테스트 사용자', TRUE, TRUE, TRUE, TRUE, TRUE),
 ('admin@nextbill.com', '관리자', TRUE, TRUE, TRUE, TRUE, TRUE);
