@@ -1,6 +1,6 @@
 # NextBill
 
-## [📌 ~~서비스 바로가기~~](https://my.nextbill.o-r.kr) 배포 중단
+## [~~서비스 바로가기~~](https://my.nextbill.o-r.kr) 배포 중단
 
 **NextBill**은 구독 서비스의 복잡한 결제 일정을 한 곳에서 관리할 수 있는 스마트한 구독 관리 플랫폼입니다.  
 Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템을 통해 구독 결제를 놓치지 않도록 도와드립니다.
@@ -24,7 +24,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## 🚀 프로젝트 개요
+## 프로젝트 개요
 
 ### 문제 정의
 - 다양한 구독 서비스로 인한 결제 관리의 복잡성
@@ -43,7 +43,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## ✨ 주요 기능
+## 주요 기능
 
 ### 인증 시스템
 - **Google OAuth2 로그인**: 안전하고 빠른 소셜 로그인
@@ -67,7 +67,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## 🛠 기술 스택
+## 기술 스택
 
 ### Frontend
 
@@ -108,7 +108,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## 🏗 시스템 아키텍처
+## 시스템 아키텍처
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -133,7 +133,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## 📊 데이터베이스 설계
+## 데이터베이스 설계
 
 ### ERD (Entity Relationship Diagram)
 
@@ -193,7 +193,7 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 
 ---
 
-## 🔄 API 문서
+## API 문서
 
 ### 인증 API
 
@@ -223,28 +223,3 @@ Google OAuth2 기반의 안전한 로그인과 개인 맞춤형 알림 시스템
 | `PUT` | `/api/subscriptions/{subscriptionId}` | 구독 수정 |
 | `DELETE` | `/api/subscriptions/{subscriptionId}` | 구독 삭제 |
 | `PATCH` | `/api/subscriptions/{subscriptionId}/pause` | 구독 일시정지/재개 |
-
----
-
-## 🤝 기여하기
-
-1. 이 저장소를 Fork 합니다
-2. 기능 브랜치를 생성합니다 (`git checkout -b feature/AmazingFeature`)
-3. 변경사항을 커밋합니다 (`git commit -m 'Add some AmazingFeature'`)
-4. 브랜치에 Push 합니다 (`git push origin feature/AmazingFeature`)
-5. Pull Request를 생성합니다
-
----
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
----
-
-## 📞 문의
-
-프로젝트에 대한 문의사항이 있으시면 언제든지 연락해 주세요:
-
-- **이메일**: nextbill.kr@gmail.com, wjstnals1211@gmail.com
-- **GitHub**: [NextBill Repository](https://github.com/suminjn/NextBill)
